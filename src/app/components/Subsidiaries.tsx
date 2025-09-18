@@ -23,12 +23,12 @@ export function Subsidiaries({ subsidiaries, data }: SubsidiariesProps) {
                 variant="outline"
                 className="text-indigo-400 border-indigo-400/50 bg-indigo-400/10"
               >
-                {data?.company?.subsidiaries?.length || 0} công ty
+                {data?.symbolData?.company?.subsidiaries?.length || 0} công ty
               </Badge>
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data?.company?.subsidiaries?.map((subsidiaries: any, index: number) => (
+              {data?.symbolData?.company?.subsidiaries?.map((subsidiaries: any, index: number) => (
                 <div
                   key={index}
                   className="p-5 bg-slate-700/30 backdrop-blur-sm rounded-xl border border-indigo-400/20"

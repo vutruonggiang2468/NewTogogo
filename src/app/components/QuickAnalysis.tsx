@@ -21,7 +21,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { apiGetSymbolByNameData } from "@/services/api";
+import { getSymbolData } from "@/services/api";
 
 // Stock data with detailed information
 const stockData = [
@@ -278,8 +278,6 @@ export function QuickAnalysis() {
   const [selectedStock, setSelectedStock] = useState("VSC");
   const [activeTab, setActiveTab] = useState("overview");
 
-  const selectedData =
-    stockData.find((stock) => stock.code === selectedStock) || stockData[0];
 
   const { slug } = useParams<{ slug: string }>();
   const [error, setError] = useState<string | null>(null);
@@ -293,28 +291,27 @@ export function QuickAnalysis() {
     exchange: string;
     updated_at: string;
   };
-
-
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      setError(null);
-
+    const fetchSymbols = async () => {
       try {
-        const response = await apiGetSymbolByNameData();
-        setData(response);
-        console.log("Data fetched:", response);
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        setError(message);
+        const data = await getSymbolData(selectedStock);
+        setData(data);
+      } catch (err) {
+        setError("Không lấy được dữ liệu symbol");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    setLoading(true);
+    fetchSymbols();
+    // No return value here (void)
+  }, [selectedStock]);
 
-  console.log("Data state:", data);
+  const selectedData =
+    data?.find((stock) => stock.name === selectedStock);
+    
+  console.log("Data  fix:", selectedData);
   return (
     <div className="space-y-6">
       {/* Stock Selection Cards */}
@@ -402,11 +399,11 @@ export function QuickAnalysis() {
                   <Card className="bg-gray-800/60 border border-gray-600/30">
                     <CardContent className="p-4">
                       {/* Stock Chart */}
-                      <div className="bg-gray-800/40 rounded-lg p-4 mb-4 border border-gray-600/30">
+                      {/* <div className="bg-gray-800/40 rounded-lg p-4 mb-4 border border-gray-600/30">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium text-white text-lg">
-                              {selectedData.code} - {selectedData.name}
+                              {selectedData?.name}
                             </h3>
                             <Badge
                               variant="outline"
@@ -425,10 +422,10 @@ export function QuickAnalysis() {
                           width={1080}
                           height={720}
                           src="/temp.jpg"
-                          alt={`Biểu đồ giao dịch ${selectedData.code}`}
+                          alt={`Biểu đồ giao dịch ${selectedData.name}`}
                           className="w-full h-48 object-cover rounded"
                         />
-                      </div>
+                      </div> */}
 
                       {/* Simple Text Analysis */}
                       <div className="space-y-4">
@@ -436,8 +433,16 @@ export function QuickAnalysis() {
                           <Activity className="w-5 h-5 text-blue-400" />
                           Thông tin phân tích
                         </h4>
+                        <div
+                          className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-400/20">
 
-                        <div className="bg-gray-800/40 rounded-lg border border-gray-600/30 p-4">
+                          <h5 className="text-base font-medium text-slate-400 mb-3">
+                            {selectedData?.name}
+                            {selectedData?.exchange}
+                          </h5>
+
+                        </div>
+                        {/* <div className="bg-gray-800/40 rounded-lg border border-gray-600/30 p-4">
                           <div className="space-y-2 text-base leading-relaxed">
                             <p className="text-gray-300">
                               <span className="text-gray-400">RSI (14):</span>
@@ -559,7 +564,7 @@ export function QuickAnalysis() {
                               </p>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     </CardContent>
                   </Card>
@@ -570,12 +575,13 @@ export function QuickAnalysis() {
                     <CardContent className="p-4">
                       <h4 className="text-lg font-medium text-slate-300 mb-4 flex items-center gap-2">
                         <Target className="w-6 h-6 text-teal-400" />
-                        Phân tích kỹ thuật {selectedData.code}
+                        Phân tích kỹ thuật
                       </h4>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
                         {/* Technical Indicators */}
-                        <div className="space-y-3">
+                        {/* <div className="space-y-3">
                           <h5 className="text-base font-medium text-slate-400">
                             Chỉ báo kỹ thuật
                           </h5>
@@ -651,10 +657,10 @@ export function QuickAnalysis() {
                               </Badge>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
 
                         {/* Support/Resistance */}
-                        <div className="space-y-3">
+                        {/* <div className="space-y-3">
                           <h5 className="text-base font-medium text-slate-400">
                             Hỗ trợ & Kháng cự
                           </h5>
@@ -720,13 +726,13 @@ export function QuickAnalysis() {
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
 
-                <TabsContent value="news">
+                {/* <TabsContent value="news">
                   <Card className="bg-gradient-to-br from-slate-800/40 to-slate-700/40 border border-blue-400/20">
                     <CardContent className="p-4">
                       <h4 className="text-lg font-medium text-slate-300 mb-4 flex items-center gap-2">
@@ -786,14 +792,14 @@ export function QuickAnalysis() {
                       </div>
                     </CardContent>
                   </Card>
-                </TabsContent>
+                </TabsContent> */}
               </div>
               {/* Action and Summary Section */}
               <div className="space-y-4">
                 {/* Stock Summary Card */}
                 <Card className="bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-teal-500/20 border border-blue-400/30 shadow-lg">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
+                    {/* <div className="flex items-center justify-between mb-3">
                       <div>
                         <h3 className="font-medium text-lg text-white">
                           {selectedData.code}
@@ -809,49 +815,38 @@ export function QuickAnalysis() {
                         )} font-medium`}
                       >
                         {getRecommendationIcon(selectedData.recommendation)}
-                        <span className="ml-1">
-                          {selectedData.recommendation === "STRONG_BUY"
-                            ? "MUA MẠNH"
-                            : selectedData.recommendation === "BUY"
-                              ? "MUA"
-                              : selectedData.recommendation === "HOLD"
-                                ? "GIỮ"
-                                : "BÁN"}
-                        </span>
                       </Badge>
-                    </div>
+                    </div> */}
 
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-base text-slate-400">
-                          Giá hiện tại:
+                          Cập nhật:
                         </span>
                         <div className="text-right">
                           <div
-                            className={`font-medium text-lg ${selectedData.trend === "up"
+                            className={`font-medium text-lg ${selectedData?.name === "up"
                               ? "text-emerald-400"
                               : "text-red-400"
                               }`}
                           >
-                            {selectedData.price}
+                            {selectedData?.updated_at}
                           </div>
                           <div
-                            className={`text-sm flex items-center gap-1 ${selectedData.trend === "up"
+                            className={`text-sm flex items-center gap-1 ${selectedData?.exchange === "up"
                               ? "text-emerald-400"
                               : "text-red-400"
                               }`}
                           >
-                            {getTrendIcon(selectedData.trend)}
-                            <span>
-                              {selectedData.change} (
-                              {selectedData.changePercent})
-                            </span>
+                            {selectedData?.exchange === "up"
+                              ? getTrendIcon("up")
+                              : getTrendIcon("down")}
                           </div>
                         </div>
                       </div>
 
                       <div className="pt-3 border-t border-blue-400/20">
-                        <Link href={`/viewdetails/${selectedData?.code}`}>
+                        <Link href={`/viewdetails/${selectedData?.name}`}>
                           <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0">
                             <Eye className="w-6 h-6 mr-2" />
                             <span className="text-sm">Xem chi tiết</span>
@@ -863,7 +858,7 @@ export function QuickAnalysis() {
                 </Card>
 
                 {/* Quick Stats */}
-                <Card className="bg-gradient-to-br from-slate-800/40 to-slate-700/40 border border-blue-400/20">
+                {/* <Card className="bg-gradient-to-br from-slate-800/40 to-slate-700/40 border border-blue-400/20">
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-3 text-white text-lg">
                       Thống kê nhanh
@@ -899,7 +894,7 @@ export function QuickAnalysis() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </div>
           </Tabs>

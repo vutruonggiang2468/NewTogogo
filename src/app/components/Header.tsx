@@ -21,15 +21,212 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+type UserProfile = {
+  email?: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  displayName?: string;
+  [key: string]: unknown;
+};
+
+const PROFILE_ENDPOINT = "https://payment.operis.vn/api/auth/profile";
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const resolveDisplayName = (profile?: UserProfile | null) => {
+  if (!profile) return "";
+  const fromDisplayName =
+    typeof profile.displayName === "string" ? profile.displayName.trim() : "";
+  if (fromDisplayName) return fromDisplayName;
+
+  const fromName =
+    typeof profile.name === "string" ? profile.name.trim() : "";
+  if (fromName) return fromName;
+
+  const first =
+    typeof profile.first_name === "string" ? profile.first_name.trim() : "";
+  const last =
+    typeof profile.last_name === "string" ? profile.last_name.trim() : "";
+  const full = [first, last].filter(Boolean).join(" ").trim();
+  if (full) return full;
+
+  const username =
+    typeof profile.username === "string" ? profile.username.trim() : "";
+  if (username) return username;
+
+  const email =
+    typeof profile.email === "string" ? profile.email.trim() : "";
+  if (email) return email;
+
+  return "";
+};
+
+const safeParseUser = (raw: string | null): UserProfile | null => {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return isRecord(parsed) ? (parsed as UserProfile) : null;
+  } catch (error) {
+    console.warn("Failed to parse cached user:", error);
+    return null;
+  }
+};
+
+const extractProfileRecord = (value: unknown): Record<string, unknown> | null => {
+  const visited = new Set<unknown>();
+  let current: unknown = value;
+
+  while (isRecord(current) && !visited.has(current)) {
+    visited.add(current);
+    const record = current as Record<string, unknown>;
+
+    const hasIdentity =
+      typeof record["email"] === "string" ||
+      typeof record["name"] === "string" ||
+      typeof record["username"] === "string" ||
+      typeof record["first_name"] === "string" ||
+      typeof record["last_name"] === "string";
+
+    if (hasIdentity) {
+      return record;
+    }
+
+    const nextKeys = ["user", "profile", "result", "data", "account"];
+    let nextCandidate: unknown = null;
+    for (const key of nextKeys) {
+      if (key in record) {
+        const candidate = record[key];
+        if (candidate !== undefined && candidate !== null) {
+          nextCandidate = candidate;
+          break;
+        }
+      }
+    }
+
+    if (!isRecord(nextCandidate) || visited.has(nextCandidate)) {
+      break;
+    }
+
+    current = nextCandidate;
+  }
+
+  return null;
+};
+
+
 export function Header() {
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [activeSearchFilter, setActiveSearchFilter] = useState("Tổng quan");
   const [searchQuery, setSearchQuery] = useState("");
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Handle scroll to show/hide header
+  const userDisplayName = resolveDisplayName(user);
+  const showAuthLinks = !userDisplayName && !isCheckingAuth;
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const fetchProfile = async () => {
+      setIsCheckingAuth(true);
+      const cachedUser = safeParseUser(localStorage.getItem("user"));
+      const token = (
+        localStorage.getItem("token") ??
+        localStorage.getItem("access_token") ??
+        localStorage.getItem("accessToken")
+      );
+
+      if (!token) {
+        localStorage.removeItem("user");
+        if (isMounted) {
+          setUser(null);
+          setIsCheckingAuth(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(PROFILE_ENDPOINT, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refresh_token");
+          if (isMounted) {
+            setUser(null);
+          }
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const payload = (await response.json()) as unknown;
+        const profileRecord = extractProfileRecord(payload);
+
+        if (!profileRecord) {
+          throw new Error("Invalid profile payload");
+        }
+
+        const normalized: UserProfile = {
+          ...(cachedUser ?? {}),
+          ...profileRecord,
+        };
+
+        if (!normalized.email && cachedUser?.email) {
+          normalized.email = cachedUser.email;
+        }
+
+        const displayName =
+          resolveDisplayName(normalized) || resolveDisplayName(cachedUser);
+        if (displayName) {
+          normalized.displayName = displayName;
+        }
+
+        if (isMounted) {
+          setUser(normalized);
+          localStorage.setItem("user", JSON.stringify(normalized));
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        console.error("Failed to load profile:", error);
+        if (isMounted) {
+          setUser(cachedUser ?? null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCheckingAuth(false);
+        }
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, []);
+// Handle scroll to show/hide header
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -116,6 +313,17 @@ export function Header() {
     "🏆 TCB đạt ROE cao nhất ngành ngân hàng",
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsProfileMenuOpen(false);
+    setIsCheckingAuth(false);
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Searching for:", searchQuery, "in", activeSearchFilter);
@@ -124,9 +332,8 @@ export function Header() {
 
   return (
     <header
-      className={`bg-gray-900/95 border-b border-gray-600/30 fixed top-0 left-0 right-0 z-50 shadow-xl backdrop-blur-md transition-transform duration-300 ease-in-out ${
-        isHeaderVisible ? "translate-y-0" : "-translate-y-full"
-      }`}
+      className={`bg-gray-900/95 border-b border-gray-600/30 fixed top-0 left-0 right-0 z-50 shadow-xl backdrop-blur-md transition-transform duration-300 ease-in-out ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
     >
       {/* Breaking News Ticker - Enhanced */}
       <div className="bg-blue-600 text-white py-2 relative overflow-hidden">
@@ -222,6 +429,29 @@ export function Header() {
                 </div>
               </Button>
 
+              {userDisplayName && !isCheckingAuth && (
+                <span className="hidden md:block text-sm text-blue-300 font-medium">
+                  {userDisplayName}
+                </span>
+              )}
+              {showAuthLinks && (
+                <div className="hidden md:flex items-center gap-2 text-sm text-blue-300 font-medium">
+                  <Link
+                    href={"/login"}
+                    className="hover:text-white transition-colors"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <span className="text-slate-600">/</span>
+                  <a
+                    href="#"
+                    className="hover:text-white transition-colors"
+                  >
+                    Đăng ký
+                  </a>
+                </div>
+              )}
+
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -236,26 +466,46 @@ export function Header() {
                 {/* Profile Dropdown - Enhanced */}
                 {isProfileMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-gradient-to-br from-slate-800 to-slate-700 border border-blue-400/30 rounded-lg shadow-xl py-2 z-50 backdrop-blur-sm">
-                    {/* <div className="px-4 py-2 border-b border-blue-400/20">
+                    <div className="px-4 py-2 border-b border-blue-400/20">
                       <div className="text-sm font-medium text-white">
                         Tài khoản
                       </div>
                       <div className="text-xs text-slate-400">
-                        guest@24h.com.vn
+                        {isCheckingAuth ? (
+                          <span>Đang kiểm tra...</span>
+                        ) : userDisplayName ? (
+                          <span className="text-blue-300 font-medium">{userDisplayName}</span>
+                        ) : (
+                          <span>Khách</span>
+                        )}
                       </div>
-                    </div> */}
-                    <Link
-                      href={"/login"}
-                      className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
-                    >
-                      Đăng nhập
-                    </Link>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
-                    >
-                      Đăng ký
-                    </a>
+                    </div>
+
+                    {showAuthLinks ? (
+                      <>
+                        <Link
+                          href={"/login"}
+                          className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
+                        >
+                          Đang nhập
+                        </Link>
+
+                        <a
+                          href="#"
+                          className="block px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
+                        >
+                          Đăng ký
+                        </a>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
+                      >
+                        Đăng xuất
+                      </button>
+                    )}
                     {/* <a
                       href="#"
                       className="block px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
@@ -301,11 +551,10 @@ export function Header() {
                     <button
                       key={filter.label}
                       onClick={() => setActiveSearchFilter(filter.label)}
-                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-xl ${
-                        activeSearchFilter === filter.label
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-xl ${activeSearchFilter === filter.label
                           ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
                           : "text-slate-300 hover:text-white hover:bg-blue-500/20"
-                      }`}
+                        }`}
                     >
                       {filter.icon}
                       <span>{filter.label}</span>
@@ -431,11 +680,10 @@ export function Header() {
                   <button
                     key={filter.label}
                     onClick={() => setActiveSearchFilter(filter.label)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-all rounded-md ${
-                      activeSearchFilter === filter.label
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-all rounded-md ${activeSearchFilter === filter.label
                         ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
                         : "text-slate-300"
-                    }`}
+                      }`}
                   >
                     {filter.icon}
                     <span>{filter.label}</span>
@@ -478,11 +726,10 @@ export function Header() {
                 <a
                   key={index}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    item.isActive
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${item.isActive
                       ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-cyan-300 font-medium border border-blue-400/30"
                       : "text-slate-300 hover:bg-blue-500/20 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {item.icon}
                   <span>{item.label}</span>

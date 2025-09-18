@@ -463,7 +463,7 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                       <span className="text-sm font-medium">{item.name}</span>
                       <div className="flex items-center gap-1">
                         <TrendingUp className="w-3 h-3 text-green-600" />
-                        <span className="text-xs text-green-600">+2.1%</span>
+                        <span className="text-xs text-green-600">1234567</span>
                       </div>
                     </div>
                   ))}

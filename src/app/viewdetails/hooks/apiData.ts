@@ -1,4 +1,4 @@
-import { getSymbolData as apiGetSymbolData } from "@/services/api";
+import { getSymbolData as apiGetSymbolData  } from "@/services/api";
 import { useEffect, useState, useCallback } from "react";
 
 // Simple placeholder type; replace with real API response shape when available

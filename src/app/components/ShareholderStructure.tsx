@@ -8,21 +8,22 @@ interface ShareholderStructureProps {
 }
 
 export function ShareholderStructure({ shareholderData, data }: ShareholderStructureProps) {
-  const largest = data?.company?.shareholders?.[0];
-  const largest1 = data?.company?.shareholders?.[1];
-  const largest2 = data?.company?.shareholders?.[2];
-  const largest3 = data?.company?.shareholders?.[3];
-  const largest4 = data?.company?.shareholders?.[4];
-  const largest5 = data?.company?.shareholders?.[5];
-  const largest6 = data?.company?.shareholders?.[6];
+  const largest = data?.symbolData?.company?.shareholders?.[0];
+  const largest1 = data?.symbolData?.company?.shareholders?.[1];
+  const largest2 = data?.symbolData?.company?.shareholders?.[2];
+  const largest3 = data?.symbolData?.company?.shareholders?.[3];
+  const largest4 = data?.symbolData?.company?.shareholders?.[4];
+  const largest5 = data?.symbolData?.company?.shareholders?.[5];
+  const largest6 = data?.symbolData?.company?.shareholders?.[6];
   //const pct = largest ? (largest.share_own_percent * 100).toFixed(2) : null;
-  const pct = largest ? largest.share_own_percent * 100 : 0;
-  const pct1 = largest1 ? largest1.share_own_percent * 100 : 0;
-  const pct2 = largest2 ? largest2.share_own_percent * 100 : 0;
-  const pct3 = largest3 ? largest3.share_own_percent * 100 : 0;
-  const pct4 = largest4 ? largest4.share_own_percent * 100 : 0;
-  const pct5 = largest5 ? largest5.share_own_percent * 100 : 0;
-  const pct6 = largest6 ? largest6.share_own_percent * 100 : 0;
+  const pct = largest ? (largest.share_own_percent * 100).toFixed(2) : "0.00";
+  const pct1 = largest1 ? (largest1.share_own_percent * 100).toFixed(2) : "0.00";
+  const pct2 = largest2 ? (largest2.share_own_percent * 100).toFixed(2) : "0.00";
+  const pct3 = largest3 ? (largest3.share_own_percent * 100).toFixed(2) : "0.00";
+  const pct4 = largest4 ? (largest4.share_own_percent * 100).toFixed(2) : "0.00";
+  const pct5 = largest5 ? (largest5.share_own_percent * 100).toFixed(2) : "0.00";
+  const pct6 = largest6 ? (largest6.share_own_percent * 100).toFixed(2) : "0.00";
+
 
   console.log("Largest shareholder:", largest?.share_own_percent);
   // console.log("ShareholderStructure data:", data?.company.shareholders.share_own_percent);
@@ -103,7 +104,7 @@ export function ShareholderStructure({ shareholderData, data }: ShareholderStruc
                     <Progress value={parseFloat(largest4?.share_own_percent)} className="h-1.5" />
                   </div>
 
-                  
+
                   <div className="p-4 bg-slate-700/30 backdrop-blur-sm rounded-xl border border-cyan-400/20">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1">

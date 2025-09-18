@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -11,7 +11,7 @@ import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 
 export default function LoginPage() {
-
+  const [user, setUser] = useState<{ email: string } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +34,7 @@ export default function LoginPage() {
   const onGoogleClick = async () => {
     try {
       setIsGoogleLoading(true);
-      const resp = await axios.get(`http://localhost:8000/api/auth/google/auth-url`, { withCredentials: true });
+      const resp = await axios.get(`https://payment.operis.vn/api/auth/google/auth-url`, { withCredentials: true });
       
       const url =
         resp.data?.auth_url ||
@@ -54,7 +54,13 @@ export default function LoginPage() {
     } finally {
       setIsGoogleLoading(false);
     }
-  };
+  };  
+  useEffect(() => {
+    const saved = localStorage.getItem("user");
+    if (saved) {
+      setUser(JSON.parse(saved));
+    }
+  }, []);
 
   return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0E1B36' }}>
