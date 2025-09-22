@@ -1,15 +1,9 @@
-'use client'
+"use client";
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Separator } from "./ui/separator";
-import { Avatar } from "./ui/avatar";
-import { Header } from "./Header";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
-  Clock,
   Eye,
   MessageCircle,
   Share2,
@@ -21,19 +15,24 @@ import {
   ThumbsUp,
   Heart,
   TrendingUp,
-  TrendingDown,
   ChevronRight,
-  Star,
-  User,
   CheckCircle,
   AlertCircle,
-  ExternalLink
-  
+  ExternalLink,
 } from "lucide-react";
-
-import { articleData, relatedArticles, getCategoryColor, formatDate, getTimeAgo } from "../constants/newsData";
-import { ImageWithFallback } from "./ImageWithFallback";
-import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar } from "@/components/ui/avatar";
+import { Header } from "@/components/layouts/Header";
+import {
+  articleData,
+  relatedArticles,
+  getCategoryColor,
+  getTimeAgo,
+} from "@/constants/newsData";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 // Define SymbolByNameData type (replace fields with actual structure if known)
 type SymbolByNameData = {
@@ -50,7 +49,11 @@ interface NewsDetailPageProps {
   onViewDetails: (stockCode: string) => void;
 }
 
-export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailPageProps) {
+export function NewsDetailPage({
+  articleId,
+  onBack,
+  onViewDetails,
+}: NewsDetailPageProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -63,7 +66,7 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
   const article = articleData[articleId as keyof typeof articleData];
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
+      setLoading(true);
       setError(null);
       try {
         const response = await apiGetSymbolByNameData(slug);
@@ -91,7 +94,9 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
           <Card>
             <CardContent className="p-6 text-center">
               <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Bài viết không tồn tại hoặc đã bị xóa.</p>
+              <p className="text-gray-600">
+                Bài viết không tồn tại hoặc đã bị xóa.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -140,7 +145,9 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                   >
                     {article.category}
                   </Badge>
-                  <span className="text-sm text-gray-500">{article.readTime}</span>
+                  <span className="text-sm text-gray-500">
+                    {article.readTime}
+                  </span>
                   <Badge variant="outline" className="text-xs">
                     {article.difficulty}
                   </Badge>
@@ -167,12 +174,16 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{article.author.name}</span>
+                          <span className="font-medium text-sm">
+                            {article.author.name}
+                          </span>
                           {article.author.verified && (
                             <CheckCircle className="w-4 h-4 text-blue-500" />
                           )}
                         </div>
-                        <div className="text-xs text-gray-500">{article.author.title}</div>
+                        <div className="text-xs text-gray-500">
+                          {article.author.title}
+                        </div>
                       </div>
                     </div>
                     <Separator orientation="vertical" className="h-8" />
@@ -200,7 +211,11 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                       className="w-8 h-8"
                       onClick={() => setIsLiked(!isLiked)}
                     >
-                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                      <Heart
+                        className={`w-4 h-4 ${
+                          isLiked ? "fill-red-500 text-red-500" : ""
+                        }`}
+                      />
                     </Button>
                     <Button
                       variant="outline"
@@ -208,7 +223,11 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                       className="w-8 h-8"
                       onClick={() => setIsBookmarked(!isBookmarked)}
                     >
-                      <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
+                      <Bookmark
+                        className={`w-4 h-4 ${
+                          isBookmarked ? "fill-blue-500 text-blue-500" : ""
+                        }`}
+                      />
                     </Button>
                     <div className="relative">
                       <Button
@@ -223,28 +242,28 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                       {showShareMenu && (
                         <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
                           <button
-                            onClick={() => handleShare('facebook')}
+                            onClick={() => handleShare("facebook")}
                             className="w-full px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
                           >
                             <Facebook className="w-4 h-4 text-blue-600" />
                             Facebook
                           </button>
                           <button
-                            onClick={() => handleShare('twitter')}
+                            onClick={() => handleShare("twitter")}
                             className="w-full px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
                           >
                             <Twitter className="w-4 h-4 text-sky-600" />
                             Twitter
                           </button>
                           <button
-                            onClick={() => handleShare('linkedin')}
+                            onClick={() => handleShare("linkedin")}
                             className="w-full px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
                           >
                             <Linkedin className="w-4 h-4 text-blue-800" />
                             LinkedIn
                           </button>
                           <button
-                            onClick={() => handleShare('copy')}
+                            onClick={() => handleShare("copy")}
                             className="w-full px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
                           >
                             <Copy className="w-4 h-4" />
@@ -282,7 +301,9 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
 
                 {/* Tags */}
                 <div className="mt-8 pt-6 border-t border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Tags:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Tags:
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {article.tags.map((tag, index) => (
                       <Badge
@@ -290,7 +311,7 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                         variant="outline"
                         className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
                         onClick={() => {
-                          if (['YTC', 'TCB', 'ACB', 'HPG'].includes(tag)) {
+                          if (["YTC", "TCB", "ACB", "HPG"].includes(tag)) {
                             onViewDetails(tag);
                           }
                         }}
@@ -304,7 +325,9 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                 {/* Sources */}
                 {article.sources && article.sources.length > 0 && (
                   <div className="mt-6 pt-4 border-t border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Nguồn tham khảo:</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                      Nguồn tham khảo:
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {article.sources.map((source, index) => (
                         <Button
@@ -338,7 +361,10 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                         <span>{article.bookmarks} lưu</span>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-green-600 border-green-200">
+                    <Badge
+                      variant="outline"
+                      className="text-green-600 border-green-200"
+                    >
                       SEO Score: {article.seoScore}/100
                     </Badge>
                   </div>
@@ -357,13 +383,19 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-lg">{article.author.name}</h4>
+                      <h4 className="font-medium text-lg">
+                        {article.author.name}
+                      </h4>
                       {article.author.verified && (
                         <CheckCircle className="w-4 h-4 text-blue-500" />
                       )}
                     </div>
-                    <p className="text-sm text-blue-600 mb-2">{article.author.title}</p>
-                    <p className="text-sm text-gray-600 mb-3">{article.author.bio}</p>
+                    <p className="text-sm text-blue-600 mb-2">
+                      {article.author.title}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-3">
+                      {article.author.bio}
+                    </p>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <span>{article.author.articles} bài viết</span>
                       <span>•</span>
@@ -393,18 +425,31 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">Nguyễn Văn A</span>
-                        <span className="text-xs text-gray-500">2 giờ trước</span>
+                        <span className="text-sm font-medium">
+                          Nguyễn Văn A
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          2 giờ trước
+                        </span>
                       </div>
                       <p className="text-sm text-gray-700 mb-2">
-                        Bài viết rất hay và chi tiết. Cảm ơn tác giả đã chia sẻ thông tin hữu ích về thị trường.
+                        Bài viết rất hay và chi tiết. Cảm ơn tác giả đã chia sẻ
+                        thông tin hữu ích về thị trường.
                       </p>
                       <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="text-xs h-6">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-6"
+                        >
                           <ThumbsUp className="w-3 h-3 mr-1" />
                           12
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-xs h-6">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-6"
+                        >
                           Trả lời
                         </Button>
                       </div>
@@ -420,17 +465,27 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium">Trần Hồng B</span>
-                        <span className="text-xs text-gray-500">1 giờ trước</span>
+                        <span className="text-xs text-gray-500">
+                          1 giờ trước
+                        </span>
                       </div>
                       <p className="text-sm text-gray-700 mb-2">
-                        Nhóm ngân hàng thực sự đang có momentum tốt. Đặc biệt VSC và TCB đều có kết quả kinh doanh ấn tượng.
+                        Nhóm ngân hàng thực sự đang có momentum tốt. Đặc biệt
+                        VSC và TCB đều có kết quả kinh doanh ấn tượng.
                       </p>
                       <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="text-xs h-6">
-                          <ThumbsUp className="w-3 h-3 mr-1" />
-                          8
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-6"
+                        >
+                          <ThumbsUp className="w-3 h-3 mr-1" />8
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-xs h-6">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-6"
+                        >
                           Trả lời
                         </Button>
                       </div>
@@ -471,21 +526,22 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => onViewDetails('YTC')}
+                    onClick={() => onViewDetails("YTC")}
                   >
                     Xem phân tích chi tiết
                   </Button>
                 </CardContent>
-
               </Card>
 
               {/* Related Articles */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Bài viết liên quan</CardTitle>
+                  <CardTitle className="text-base">
+                    Bài viết liên quan
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {relatedArticles.map(related => (
+                  {relatedArticles.map((related) => (
                     <div key={related.id} className="group cursor-pointer">
                       <div className="flex gap-3">
                         <ImageWithFallback
@@ -520,14 +576,18 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
               {/* Market Widget */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Thị trường hôm nay</CardTitle>
+                  <CardTitle className="text-base">
+                    Thị trường hôm nay
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">VN-Index</span>
                     <div className="text-right">
                       <div className="text-sm font-medium">1,278.45</div>
-                      <div className="text-xs text-green-600">+12.35 (+0.97%)</div>
+                      <div className="text-xs text-green-600">
+                        +12.35 (+0.97%)
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
@@ -541,7 +601,9 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
                     <span className="text-sm">UPCOM</span>
                     <div className="text-right">
                       <div className="text-sm font-medium">89.45</div>
-                      <div className="text-xs text-green-600">+0.23 (+0.26%)</div>
+                      <div className="text-xs text-green-600">
+                        +0.23 (+0.26%)
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -553,7 +615,6 @@ export function NewsDetailPage({ articleId, onBack, onViewDetails }: NewsDetailP
     </div>
   );
 }
-
 
 async function apiGetSymbolByNameData(slug: any): Promise<SymbolByNameData[]> {
   // Replace this mock with your actual API call logic
@@ -569,7 +630,6 @@ async function apiGetSymbolByNameData(slug: any): Promise<SymbolByNameData[]> {
       name: "Techcombank",
       price: 45.2,
       // Add other fields as required
-    }
+    },
   ];
 }
-

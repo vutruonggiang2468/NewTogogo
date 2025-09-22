@@ -2,17 +2,16 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useEffect } from "react";
-import { Badge } from "./components/ui/badge";
-import { Card, CardContent } from "./components/ui/card";
+import { ChartColumnBig, Clock, Eye, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { DeepAnalysisPage } from "./components/DeepAnalysisPage";
-import { BarChart, ChartColumnBig, Clock, Eye, Sparkles } from "lucide-react";
 import { NewsDetailPage } from "./components/NewDetailPage";
 import { QuickAnalysis } from "./components/QuickAnalysis";
 import { TogogoTradingBotCompact } from "./components/TogogoTradingBotCompact";
 import { NewsColumns } from "./components/NewsColumns";
 import { EconomicCalendar } from "./components/EconomicCalendar";
 import { NewsSidebar } from "./components/NewsSidebar";
-import { DetailedAnalysisPage } from "./components/DetailedAnalysisPage";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<
@@ -54,23 +53,12 @@ export default function Home() {
     setSelectedArticle(1);
   };
 
-  // Render different views based on current state
-  if (currentView === "details") {
-    return (
-      <DetailedAnalysisPage
-        stockCode={selectedStock}
-        onBack={handleBackToHome}
-      />
-    );
-  }
-
   if (currentView === "news-detail") {
     return (
       <NewsDetailPage
         articleId={selectedArticle}
         onBack={handleBackToHome}
         onViewDetails={handleViewDetails}
-
       />
     );
   }
@@ -105,7 +93,7 @@ export default function Home() {
                   </Badge>
                 </div>
                 <div className="text-xs text-gray-400 bg-gray-800/60 px-2 py-1 rounded">
-                12:45 PM
+                  12:45 PM
                 </div>
               </div>
               <QuickAnalysis />

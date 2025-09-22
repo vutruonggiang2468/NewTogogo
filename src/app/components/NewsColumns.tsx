@@ -1,5 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
 import {
   Building,
   ChartColumnBig,
@@ -9,6 +7,8 @@ import {
   Flame,
   Scale,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface NewsColumnsProps {
   onViewNews: (articleId: number) => void;

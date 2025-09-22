@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import Breadcrumb from "@/app/components/Breadcrumb";
-import { Card, CardContent } from "@/app/components/ui/card";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import Breadcrumb from "@/components/layouts/Breadcrumb";
+import { Card, CardContent } from "@/components/ui/card";
 import { getSymbolData } from "@/services/api";
 
 // Define the SymbolByNameData type
@@ -11,7 +11,6 @@ type SymbolByNameData = {
   code: string;
   name: string;
 };
-
 
 export default function DeepAnalysisIndexPage() {
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +41,12 @@ export default function DeepAnalysisIndexPage() {
 
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-cyan-400">PHÂN TÍCH CHUYÊN SÂU</h1>
-            <p className="text-slate-400 text-sm">Chọn mã cổ phiếu để xem phân tích chi tiết</p>
+            <h1 className="text-2xl font-bold text-cyan-400">
+              PHÂN TÍCH CHUYÊN SÂU
+            </h1>
+            <p className="text-slate-400 text-sm">
+              Chọn mã cổ phiếu để xem phân tích chi tiết
+            </p>
           </div>
 
           {/* Quick links (placeholder) */}
@@ -54,10 +57,14 @@ export default function DeepAnalysisIndexPage() {
                   <Card className="bg-slate-800/60 border border-blue-400/30 hover:border-cyan-400/50 transition-colors">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div>
-                        <div className="text-white font-semibold">{item.name}</div>
+                        <div className="text-white font-semibold">
+                          {item.name}
+                        </div>
                         {/* <div className="text-slate-400 text-sm">{item.exchange}</div> */}
                       </div>
-                      <span className="text-cyan-400 text-sm">Xem chi tiết →</span>
+                      <span className="text-cyan-400 text-sm">
+                        Xem chi tiết →
+                      </span>
                     </CardContent>
                   </Card>
                 </Link>
@@ -68,4 +75,3 @@ export default function DeepAnalysisIndexPage() {
     </div>
   );
 }
-

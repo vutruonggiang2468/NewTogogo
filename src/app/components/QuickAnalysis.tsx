@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   TrendingUp,
   TrendingDown,
@@ -11,229 +11,14 @@ import {
   Activity,
   Target,
   AlertCircle,
-  Zap,
-  Clock,
   Eye,
   ArrowUpRight,
   ArrowDownRight,
   Minus,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getSymbolData } from "@/services/api";
-
-// Stock data with detailed information
-const stockData = [
-  {
-    code: "VSC",
-    name: "Vietcombank",
-    price: "95.8",
-    change: "+2.1",
-    changePercent: "+2.24%",
-    trend: "up",
-    color: "text-green-600",
-    volume: "2.1M",
-    value: "201.8B",
-    session: {
-      open: "93.5",
-      high: "96.2",
-      low: "93.0",
-      avgPrice: "95.1",
-    },
-    technical: {
-      rsi: 65.4,
-      macd: "Bullish",
-      ma20: "Above",
-      support: "92.0",
-      resistance: "98.0",
-    },
-    recommendation: "BUY",
-    sector: "Banking",
-  },
-  {
-    code: "TCB",
-    name: "Techcombank",
-    price: "23.4",
-    change: "+0.7",
-    changePercent: "+3.08%",
-    trend: "up",
-    color: "text-green-600",
-    volume: "8.5M",
-    value: "198.9B",
-    session: {
-      open: "22.7",
-      high: "23.6",
-      low: "22.6",
-      avgPrice: "23.2",
-    },
-    technical: {
-      rsi: 72.1,
-      macd: "Strong Bullish",
-      ma20: "Above",
-      support: "22.0",
-      resistance: "25.0",
-    },
-    recommendation: "STRONG_BUY",
-    sector: "Banking",
-  },
-  {
-    code: "BID",
-    name: "BIDV",
-    price: "48.2",
-    change: "-0.3",
-    changePercent: "-0.62%",
-    trend: "down",
-    color: "text-red-600",
-    volume: "1.2M",
-    value: "57.8B",
-    session: {
-      open: "48.5",
-      high: "48.7",
-      low: "47.8",
-      avgPrice: "48.3",
-    },
-    technical: {
-      rsi: 45.8,
-      macd: "Bearish",
-      ma20: "Below",
-      support: "47.0",
-      resistance: "50.0",
-    },
-    recommendation: "HOLD",
-    sector: "Banking",
-  },
-  {
-    code: "ACB",
-    name: "ACB",
-    price: "22.5",
-    change: "+0.5",
-    changePercent: "+2.27%",
-    trend: "up",
-    color: "text-green-600",
-    volume: "3.8M",
-    value: "85.5B",
-    session: {
-      open: "22.0",
-      high: "22.7",
-      low: "21.9",
-      avgPrice: "22.3",
-    },
-    technical: {
-      rsi: 58.2,
-      macd: "Bullish",
-      ma20: "Above",
-      support: "21.5",
-      resistance: "24.0",
-    },
-    recommendation: "BUY",
-    sector: "Banking",
-  },
-  {
-    code: "HPG",
-    name: "Hoa Phat Group",
-    price: "24.6",
-    change: "+1.2",
-    changePercent: "+5.13%",
-    trend: "up",
-    color: "text-green-600",
-    volume: "12.3M",
-    value: "302.4B",
-    session: {
-      open: "23.4",
-      high: "24.8",
-      low: "23.2",
-      avgPrice: "24.1",
-    },
-    technical: {
-      rsi: 76.3,
-      macd: "Very Bullish",
-      ma20: "Above",
-      support: "23.0",
-      resistance: "26.0",
-    },
-    recommendation: "STRONG_BUY",
-    sector: "Steel",
-  },
-  {
-    code: "HSG",
-    name: "Hoa Sen Group",
-    price: "3.4",
-    change: "+0.1",
-    changePercent: "+3.03%",
-    trend: "up",
-    color: "text-green-600",
-    volume: "15.2M",
-    value: "51.7B",
-    session: {
-      open: "3.3",
-      high: "3.5",
-      low: "3.3",
-      avgPrice: "3.4",
-    },
-    technical: {
-      rsi: 68.9,
-      macd: "Bullish",
-      ma20: "Above",
-      support: "3.2",
-      resistance: "3.7",
-    },
-    recommendation: "BUY",
-    sector: "Steel",
-  },
-  {
-    code: "VHM",
-    name: "Vinhomes",
-    price: "45.2",
-    change: "-0.8",
-    changePercent: "-1.74%",
-    trend: "down",
-    color: "text-red-600",
-    volume: "2.9M",
-    value: "131.1B",
-    session: {
-      open: "46.0",
-      high: "46.1",
-      low: "44.8",
-      avgPrice: "45.4",
-    },
-    technical: {
-      rsi: 38.7,
-      macd: "Bearish",
-      ma20: "Below",
-      support: "43.0",
-      resistance: "47.0",
-    },
-    recommendation: "SELL",
-    sector: "Real Estate",
-  },
-  {
-    code: "VIC",
-    name: "Vingroup",
-    price: "41.8",
-    change: "-0.2",
-    changePercent: "-0.48%",
-    trend: "down",
-    color: "text-red-600",
-    volume: "1.8M",
-    value: "75.2B",
-    session: {
-      open: "42.0",
-      high: "42.3",
-      low: "41.5",
-      avgPrice: "41.9",
-    },
-    technical: {
-      rsi: 42.1,
-      macd: "Neutral",
-      ma20: "At",
-      support: "40.0",
-      resistance: "44.0",
-    },
-    recommendation: "HOLD",
-    sector: "Conglomerate",
-  },
-];
 
 const getTrendIcon = (trend: string) => {
   return trend === "up" ? (
@@ -274,10 +59,8 @@ const getRecommendationIcon = (rec: string) => {
 };
 
 export function QuickAnalysis() {
-
   const [selectedStock, setSelectedStock] = useState("VSC");
   const [activeTab, setActiveTab] = useState("overview");
-
 
   const { slug } = useParams<{ slug: string }>();
   const [error, setError] = useState<string | null>(null);
@@ -285,7 +68,6 @@ export function QuickAnalysis() {
   const [loading, setLoading] = useState<boolean>(false);
 
   type SymbolByNameData = {
-
     name: string;
     id: string;
     exchange: string;
@@ -308,9 +90,8 @@ export function QuickAnalysis() {
     // No return value here (void)
   }, [selectedStock]);
 
-  const selectedData =
-    data?.find((stock) => stock.name === selectedStock);
-    
+  const selectedData = data?.find((stock) => stock.name === selectedStock);
+
   console.log("Data  fix:", selectedData);
   return (
     <div className="space-y-6">
@@ -319,10 +100,11 @@ export function QuickAnalysis() {
         {data?.map((data) => (
           <Card
             key={data.name}
-            className={`cursor-pointer transition-all hover:shadow-lg border-2 ${selectedStock === data.name
-              ? "ring-2 ring-blue-400 bg-blue-500/20 border-blue-400/50"
-              : "hover:bg-gray-800/60 bg-gray-800/40 border-gray-600/30 hover:border-gray-500/50"
-              }`}
+            className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+              selectedStock === data.name
+                ? "ring-2 ring-blue-400 bg-blue-500/20 border-blue-400/50"
+                : "hover:bg-gray-800/60 bg-gray-800/40 border-gray-600/30 hover:border-gray-500/50"
+            }`}
             onClick={() => setSelectedStock(data.name)}
           >
             <CardContent className="p-3 text-center">
@@ -331,8 +113,9 @@ export function QuickAnalysis() {
               </div>
               <div className="text-sm text-gray-300 mb-1">{data.name}</div>
               <div
-                className={`text-sm flex items-center justify-center gap-1 ${data.id === "up" ? "text-emerald-400" : "text-red-400"
-                  }`}
+                className={`text-sm flex items-center justify-center gap-1 ${
+                  data.id === "up" ? "text-emerald-400" : "text-red-400"
+                }`}
               >
                 {getTrendIcon(data.id)}
                 <span>{data.id}</span>
@@ -340,19 +123,17 @@ export function QuickAnalysis() {
               <div className="mt-1">
                 <Badge
                   variant="outline"
-                  className={`text-xs ${getRecommendationColor(
-                    data.name
-                  )}`}
+                  className={`text-xs ${getRecommendationColor(data.name)}`}
                 >
                   {getRecommendationIcon(data.name)}
                   <span className="ml-1">
                     {data.name === "STRONG_BUY"
                       ? "MUA MẠNH"
                       : data.name === "BUY"
-                        ? "MUA"
-                        : data.name === "HOLD"
-                          ? "GIỮ"
-                          : "BÁN"}
+                      ? "MUA"
+                      : data.name === "HOLD"
+                      ? "GIỮ"
+                      : "BÁN"}
                   </span>
                 </Badge>
               </div>
@@ -433,14 +214,11 @@ export function QuickAnalysis() {
                           <Activity className="w-5 h-5 text-blue-400" />
                           Thông tin phân tích
                         </h4>
-                        <div
-                          className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-400/20">
-
+                        <div className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-400/20">
                           <h5 className="text-base font-medium text-slate-400 mb-3">
                             {selectedData?.name}
                             {selectedData?.exchange}
                           </h5>
-
                         </div>
                         {/* <div className="bg-gray-800/40 rounded-lg border border-gray-600/30 p-4">
                           <div className="space-y-2 text-base leading-relaxed">
@@ -579,7 +357,6 @@ export function QuickAnalysis() {
                       </h4>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        
                         {/* Technical Indicators */}
                         {/* <div className="space-y-3">
                           <h5 className="text-base font-medium text-slate-400">
@@ -825,18 +602,20 @@ export function QuickAnalysis() {
                         </span>
                         <div className="text-right">
                           <div
-                            className={`font-medium text-lg ${selectedData?.name === "up"
-                              ? "text-emerald-400"
-                              : "text-red-400"
-                              }`}
+                            className={`font-medium text-lg ${
+                              selectedData?.name === "up"
+                                ? "text-emerald-400"
+                                : "text-red-400"
+                            }`}
                           >
                             {selectedData?.updated_at}
                           </div>
                           <div
-                            className={`text-sm flex items-center gap-1 ${selectedData?.exchange === "up"
-                              ? "text-emerald-400"
-                              : "text-red-400"
-                              }`}
+                            className={`text-sm flex items-center gap-1 ${
+                              selectedData?.exchange === "up"
+                                ? "text-emerald-400"
+                                : "text-red-400"
+                            }`}
                           >
                             {selectedData?.exchange === "up"
                               ? getTrendIcon("up")
@@ -903,4 +682,3 @@ export function QuickAnalysis() {
     </div>
   );
 }
-
