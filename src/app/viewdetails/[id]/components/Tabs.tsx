@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, DollarSign, Users, TrendingUpIcon } from "lucide-react";
 import OverviewTab from "./tabs/OverView";

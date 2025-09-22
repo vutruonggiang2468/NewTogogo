@@ -14,25 +14,6 @@ interface AuthState {
   updateProfile: (updates: Partial<UserProfile>) => void;
 }
 
-// Mock user data for demonstration
-const mockUser: UserProfile = {
-  id: "USR001",
-  email: "khoa.ndk.nene@gmail.com",
-  fullName: "Nguyễn Đức Khoa",
-  phone: "0912345678",
-  address: "123 Đường Lê Lợi, Quận 1, TP.HCM",
-  gender: "male",
-  dateOfBirth: "1992-05-15",
-  avatar:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-  joinDate: "2023-03-15",
-  totalTrades: 156,
-  totalProfit: 45600000,
-  successRate: 72.4,
-  signalMethod: "telegram",
-  signalEnabled: true,
-};
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({

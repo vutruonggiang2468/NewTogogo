@@ -1,9 +1,9 @@
 import React from "react";
+import { Building2, PieChart, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StockChart } from "../charts/StockChart";
-import { Building2, PieChart, Globe } from "lucide-react";
 
 interface OverviewTabProps {
   stock: any;
