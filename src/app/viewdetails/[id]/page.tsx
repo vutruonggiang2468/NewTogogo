@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { searchSuggestions } from "@/constants/stockDatabase";
 import { getStockAnalysis } from "@/components/helpers/detailedAnalysisHelpers";
-import TabsDetail from "../components/Tabs";
+import TabsDetail from "./components/Tabs";
 import Breadcrumb from "@/components/layouts/Breadcrumb";
 import { getCompanyDetails } from "@/services/api";
 import { CompanyDetails } from "../types";

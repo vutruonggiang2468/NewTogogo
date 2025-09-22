@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, DollarSign, Users, TrendingUpIcon } from "lucide-react";
@@ -19,43 +19,33 @@ export default function TabsDetail({
   data,
   isPositive,
 }: TabsDetailProps) {
-  const [date, setDate] = useState<Date | null>(new Date());
-  const { id } = useParams<{ id: string }>();
-  const [error, setError] = useState<string | null>(null);
-  // const [cashflowData, setCashflowData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  console.log("TabsDetail data:", data);
-
-  console.log("Cashflow data:", data?.cashflowData);
-
   return (
     <Tabs defaultValue="overview" className="space-y-4">
       <TabsList className="grid w-full grid-cols-4 bg-slate-800/60 border border-blue-400/30 p-1">
         <TabsTrigger
           value="overview"
-          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-xs py-2"
+          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-sm font-bold py-2"
         >
           <BarChart className="w-4 h-4 mr-1" />
           Tổng quan
         </TabsTrigger>
         <TabsTrigger
           value="financials"
-          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-xs py-2"
+          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-sm font-bold py-2"
         >
           <DollarSign className="w-4 h-4 mr-1" />
           Tài chính
         </TabsTrigger>
         <TabsTrigger
           value="governance"
-          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-xs py-2"
+          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-sm font-bold py-2"
         >
           <Users className="w-4 h-4 mr-1" />
           Quản trị
         </TabsTrigger>
         <TabsTrigger
           value="analysis"
-          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-xs py-2"
+          className="data-[state=active]:bg-blue-500/20 text-white data-[state=active]:text-cyan-400 text-sm font-bold py-2"
         >
           <TrendingUpIcon className="w-4 h-4 mr-1" />
           Phân tích
