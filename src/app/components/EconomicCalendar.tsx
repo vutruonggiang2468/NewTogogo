@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,8 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+} from "@/components/ui/table";
+
 const EconomicBarChart = dynamic(() => import("./EconomicBarChart"), {
   ssr: false,
   loading: () => (

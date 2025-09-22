@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import {
-  BarChart,
-  DollarSign,
-  Users,
-  TrendingUpIcon
-} from "lucide-react";
-import OverviewTab from "./OverView";
-import FinancialsTab from "./Financials";
-import GovernanceTab from "./Governace";
-import AnalysisTab from "./AnalysisTab";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, DollarSign, Users, TrendingUpIcon } from "lucide-react";
+import OverviewTab from "./tabs/OverView";
+import FinancialsTab from "./tabs/Financials";
+import GovernanceTab from "./tabs/Governace";
+import AnalysisTab from "./tabs/AnalysisTab";
 
 // Import the separated tab components
 interface TabsDetailProps {
@@ -19,7 +14,11 @@ interface TabsDetailProps {
   isPositive: boolean;
 }
 
-export default function TabsDetail({ stock, data, isPositive }: TabsDetailProps) {
+export default function TabsDetail({
+  stock,
+  data,
+  isPositive,
+}: TabsDetailProps) {
   const [date, setDate] = useState<Date | null>(new Date());
   const { id } = useParams<{ id: string }>();
   const [error, setError] = useState<string | null>(null);
@@ -66,29 +65,19 @@ export default function TabsDetail({ stock, data, isPositive }: TabsDetailProps)
       {/* Full Width Content */}
       <div className="w-full">
         <TabsContent value="overview">
-          <OverviewTab 
-            stock={stock} 
-            data={data} 
-            isPositive={isPositive} 
-          />
+          <OverviewTab stock={stock} data={data} isPositive={isPositive} />
         </TabsContent>
 
         <TabsContent value="financials">
-          <FinancialsTab 
-            data={data} 
-          />
+          <FinancialsTab data={data} />
         </TabsContent>
 
         <TabsContent value="governance">
-          <GovernanceTab 
-            stock={stock} 
-            data={data} 
-          />
+          <GovernanceTab stock={stock} data={data} />
         </TabsContent>
 
         <TabsContent value="analysis">
-          <AnalysisTab 
-          data={data}/>
+          <AnalysisTab data={data} />
         </TabsContent>
       </div>
     </Tabs>

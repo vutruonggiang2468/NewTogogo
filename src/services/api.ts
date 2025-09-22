@@ -1,13 +1,12 @@
 import axios from "axios";
-const API_URL = "https://payment.operis.vn/api"; // Replace with your actual API URL
+const API_URL = "http://192.168.31.248:8000/api"; // Replace with your actual API URL
 const api = axios.create({
-  baseURL: "https://payment.operis.vn/api/",
+  baseURL: API_URL,
   timeout: 10000,
 });
 
-
 export const getSymbolData = async (symbol: string) => {
-  const response = await axios(`${API_URL}/stocks/symbols?limit=8`);
+  const response = await api.get(`/stocks/symbols?limit=8`);
   if (!response) {
     throw new Error("Failed to fetch stock data");
   }
@@ -15,10 +14,10 @@ export const getSymbolData = async (symbol: string) => {
 };
 export const getCompanyDetails = async (symbolId: string | number) => {
   const endpoints = [
-    { key: "symbolData", url: `/stocks/symbols/96` },   
-    { key: "balanceData", url: `/calculate/balances/670` }, 
-    { key: "incomeData", url: `/calculate/incomes/670` }, 
-    { key: "cashflowData", url: `/calculate/cashflows/670` }, 
+    { key: "symbolData", url: `/stocks/symbols/96` },
+    { key: "balanceData", url: `/calculate/balances/659` },
+    { key: "incomeData", url: `/calculate/incomes/659` },
+    { key: "cashflowData", url: `/calculate/cashflows/659` },
   ];
 
   const results = await Promise.allSettled(
