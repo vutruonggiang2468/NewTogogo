@@ -2,8 +2,8 @@ import React from "react";
 import { Crown, Leaf, Shield, Target, Activity } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShareholderStructure } from "@/app/viewdetails/components/sections/ShareholderStructure";
-import { Subsidiaries } from "@/app/viewdetails/components/sections/Subsidiaries";
+import { ShareholderStructure } from "../sections/ShareholderStructure";
+import { Subsidiaries } from "../sections/Subsidiaries";
 import { calculateMarketPosition } from "@/components/helpers/detailedAnalysisHelpers";
 
 interface GovernanceProps {

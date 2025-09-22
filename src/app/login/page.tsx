@@ -1,10 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { FcGoogle } from "react-icons/fc";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Eye,
@@ -16,9 +14,11 @@ import {
   BarChart3,
   Sparkles,
 } from "lucide-react";
-
-import { FcGoogle } from "react-icons/fc";
-import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function LoginPage() {
   const [user, setUser] = useState<{ email: string } | null>(null);
@@ -28,7 +28,8 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const onBack = () => window.history.back();
+  const router = useRouter();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -96,7 +97,13 @@ export default function LoginPage() {
 
       <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
         {/* Back button */}
-        <Button onClick={onBack} className="mb-6 bg-blue-400" variant="outline">
+        <Button
+          onClick={() => {
+            router.push("/");
+          }}
+          className="mb-6 bg-blue-400"
+          variant="outline"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Về trang chủ
         </Button>
