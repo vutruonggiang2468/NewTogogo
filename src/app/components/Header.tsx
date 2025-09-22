@@ -226,7 +226,7 @@ export function Header() {
       controller.abort();
     };
   }, []);
-// Handle scroll to show/hide header
+  // Handle scroll to show/hide header
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -329,6 +329,35 @@ export function Header() {
     console.log("Searching for:", searchQuery, "in", activeSearchFilter);
     // Handle search logic here
   };
+  const [dateStr, setDateStr] = useState("");
+
+  useEffect(() => {
+    const updateDate = () => {
+      const now = new Date();
+
+      // Map thứ
+      const weekdays = [
+        "Chủ nhật",
+        "Thứ 2",
+        "Thứ 3",
+        "Thứ 4",
+        "Thứ 5",
+        "Thứ 6",
+        "Thứ 7",
+      ];
+
+      const dayName = weekdays[now.getDay()];
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+
+      setDateStr(`${dayName}, ${day}/${month}/${year}`);
+    };
+
+    updateDate(); // chạy lần đầu
+    const timer = setInterval(updateDate, 60 * 1000); // cập nhật mỗi phút
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <header
@@ -377,7 +406,7 @@ export function Header() {
               </div>
               <div>
                 <div className="text-xl font-bold text-white">
-                  CHỨNG KHOÁN 24H
+                  TOGOGO ANALYTICS
                 </div>
                 <div className="text-xs text-gray-400 flex items-center gap-2">
                   <span>Tin tức & Phân tích tài chính</span>
@@ -398,7 +427,7 @@ export function Header() {
             <div className="hidden lg:flex items-center space-x-6 text-sm">
               <div className="flex items-center space-x-2 px-3 py-2 bg-gray-800/60 rounded-lg border border-gray-600/40">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300">Thứ 7, 23/08/2025</span>
+                <span className="text-gray-300">{dateStr}</span>
               </div>
               <div className="text-gray-600">|</div>
               <div className="flex items-center space-x-2 px-3 py-2 bg-emerald-500/10 rounded-lg border border-emerald-400/30">
@@ -418,16 +447,7 @@ export function Header() {
 
             {/* Action buttons - Enhanced */}
             <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative hover:bg-gray-700/50 text-gray-300 hover:text-white"
-              >
-                <Bell className="w-4 h-4" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
-                </div>
-              </Button>
+
 
               {userDisplayName && !isCheckingAuth && (
                 <span className="hidden md:block text-sm text-blue-300 font-medium">
@@ -436,7 +456,7 @@ export function Header() {
               )}
               {showAuthLinks && (
                 <div className="hidden md:flex items-center gap-2 text-sm text-blue-300 font-medium">
-                  <Link
+                  {/* <Link
                     href={"/login"}
                     className="hover:text-white transition-colors"
                   >
@@ -448,7 +468,7 @@ export function Header() {
                     className="hover:text-white transition-colors"
                   >
                     Đăng ký
-                  </a>
+                  </a> */}
                 </div>
               )}
 
@@ -460,7 +480,6 @@ export function Header() {
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 >
                   <User className="w-4 h-4" />
-                  <ChevronDown className="w-3 h-3 ml-1" />
                 </Button>
 
                 {/* Profile Dropdown - Enhanced */}
@@ -480,16 +499,14 @@ export function Header() {
                         )}
                       </div>
                     </div>
-
                     {showAuthLinks ? (
                       <>
                         <Link
                           href={"/login"}
                           className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
                         >
-                          Đang nhập
+                          Đăng nhập
                         </Link>
-
                         <a
                           href="#"
                           className="block px-4 py-2 text-sm text-slate-300 hover:bg-blue-500/20 hover:text-white transition-colors"
@@ -521,7 +538,16 @@ export function Header() {
                   </div>
                 )}
               </div>
-
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative hover:bg-gray-700/50 text-gray-300 hover:text-white"
+              >
+                <Bell className="w-4 h-4" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                  3
+                </div>
+              </Button>
               {/* Mobile menu button - Enhanced */}
               <Button
                 variant="ghost"
@@ -552,8 +578,8 @@ export function Header() {
                       key={filter.label}
                       onClick={() => setActiveSearchFilter(filter.label)}
                       className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-xl ${activeSearchFilter === filter.label
-                          ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
-                          : "text-slate-300 hover:text-white hover:bg-blue-500/20"
+                        ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
+                        : "text-slate-300 hover:text-white hover:bg-blue-500/20"
                         }`}
                     >
                       {filter.icon}
@@ -681,8 +707,8 @@ export function Header() {
                     key={filter.label}
                     onClick={() => setActiveSearchFilter(filter.label)}
                     className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-all rounded-md ${activeSearchFilter === filter.label
-                        ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
-                        : "text-slate-300"
+                      ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
+                      : "text-slate-300"
                       }`}
                   >
                     {filter.icon}
@@ -727,8 +753,8 @@ export function Header() {
                   key={index}
                   href={item.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${item.isActive
-                      ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-cyan-300 font-medium border border-blue-400/30"
-                      : "text-slate-300 hover:bg-blue-500/20 hover:text-white"
+                    ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-cyan-300 font-medium border border-blue-400/30"
+                    : "text-slate-300 hover:bg-blue-500/20 hover:text-white"
                     }`}
                 >
                   {item.icon}

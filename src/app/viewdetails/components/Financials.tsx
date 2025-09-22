@@ -39,7 +39,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
 
     // Sort quarters within each year
     Object.keys(grouped).forEach(year => {
-      grouped[parseInt(year)].sort((a, b) => b.quarter - a.quarter);
+      grouped[parseInt(year)].sort((a: QuarterData, b: QuarterData) => b.quarter - a.quarter);
     });
 
     return grouped;
@@ -115,7 +115,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                       <div className="text-slate-400 text-xs">Tổng doanh thu</div>
                       <div className="text-white font-semibold">
                         {formatNumber(
-                          groupedData[year]?.reduce((sum, q) => sum + (q.revenue || 0), 0) || 0
+                          groupedData[year]?.reduce((sum: number, q: QuarterData) => sum + (q.revenue || 0), 0) || 0
                         )}
                       </div>
                     </div>
@@ -123,7 +123,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                       <div className="text-slate-400 text-xs">Lợi nhuận ròng</div>
                       <div className="text-emerald-400 font-semibold">
                         {formatNumber(
-                          groupedData[year]?.reduce((sum, q) => sum + (q.net_profit_for_the_year || 0), 0) || 0
+                          groupedData[year]?.reduce((sum: number, q: QuarterData) => sum + (q.net_profit_for_the_year || 0), 0) || 0
                         )}
                       </div>
                     </div>
@@ -133,7 +133,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                 {/* Quarters */}
                 {expandedYears[year] && (
                   <div className="border-t border-slate-700/40">
-                    {groupedData[year]?.map((quarter) => {
+                    {groupedData[year]?.map((quarter: QuarterData) => {
                       const quarterKey = `${year}-${quarter.quarter}`;
                       const isExpanded = expandedQuarters[quarterKey];
                       

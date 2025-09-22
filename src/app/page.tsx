@@ -70,7 +70,7 @@ export default function Home() {
         articleId={selectedArticle}
         onBack={handleBackToHome}
         onViewDetails={handleViewDetails}
-  
+
       />
     );
   }
@@ -105,7 +105,7 @@ export default function Home() {
                   </Badge>
                 </div>
                 <div className="text-xs text-gray-400 bg-gray-800/60 px-2 py-1 rounded">
-                  14:32
+                12:45 PM
                 </div>
               </div>
               <QuickAnalysis />
