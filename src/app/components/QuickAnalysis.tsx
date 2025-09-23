@@ -61,7 +61,7 @@ const getRecommendationIcon = (rec: string) => {
 };
 
 export function QuickAnalysis() {
-  const [selectedStock, setSelectedStock] = useState("VSC");
+  const [selectedStock, setSelectedStock] = useState("symbolId");
   const [activeTab, setActiveTab] = useState("overview");
 
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +93,9 @@ export function QuickAnalysis() {
   }, [selectedStock]);
 
   const selectedData = data?.find((stock) => stock.name === selectedStock);
+
+
+  console.log("Data  fixid:", selectedData);
 
   return (
     <div className="space-y-6">

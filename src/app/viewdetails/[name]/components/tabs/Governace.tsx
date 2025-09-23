@@ -28,7 +28,7 @@ export default function GovernanceTab({ stock, data }: GovernanceProps) {
             Ban lãnh đạo
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data?.symbolData.company?.officers?.map(
+            {data?.symbolData?.company?.officers?.map(
               (officer: any, index: number) => (
                 <div key={index} className="p-4 bg-slate-700/30 rounded-lg">
                   <div className="flex items-center gap-3 mb-3">
