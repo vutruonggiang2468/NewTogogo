@@ -10,18 +10,35 @@ import { searchSuggestions } from "@/constants/stockDatabase";
 import { getStockAnalysis } from "@/components/helpers/detailedAnalysisHelpers";
 import TabsDetail from "./components/Tabs";
 import Breadcrumb from "@/components/layouts/Breadcrumb";
-import { getCompanyDetails } from "@/services/api";
+import { getCompanyDetails, getSymbolData } from "@/services/api";
 import { CompanyDetails } from "../types";
+import { useSymbolStore } from "@/store/symbol.store";
 
 export default function DetailedAnalysisPage() {
-  const { id } = useParams<{ id: string }>();
+  const { name } = useParams<{ name: string }>();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchSuggestions, setShowSearchSuggestions] =
     useState<boolean>(false);
-
-  const stock = getStockAnalysis(id);
-  const isPositive = stock.change?.trim().startsWith("+") ?? false;
+  const [id, setId] = useState<string>("1");
   const [detailedInfo, setDetailedInfo] = useState<CompanyDetails | null>(null);
+
+  const { symbolMap, setSymbolMap } = useSymbolStore();
+
+  useEffect(() => {
+    const load = async () => {
+      if (!symbolMap || Object.keys(symbolMap).length === 0) {
+        // F5 trực tiếp → map rỗng → fetch lại
+        const list = await getSymbolData();
+        setSymbolMap(list);
+        const found = list.find((s: any) => s.name === name);
+        if (found) setId(found.id);
+      } else {
+        // map đã có → chỉ việc lấy
+        setId(symbolMap[name]);
+      }
+    };
+    load();
+  }, [name, symbolMap, setSymbolMap]);
 
   useEffect(() => {
     async function fetchCompanyDetails() {
@@ -48,6 +65,9 @@ export default function DetailedAnalysisPage() {
     window.location.href = `/viewdetails/${newStockCode}`;
   };
 
+  const stock = getStockAnalysis(id);
+  const isPositive = stock.change?.trim().startsWith("+") ?? false;
+
   return (
     <TooltipProvider>
       <div className="min-h-screen mt-24">
@@ -60,7 +80,7 @@ export default function DetailedAnalysisPage() {
                 PHÂN TÍCH CHUYÊN SÂU
               </h1>
               <p className="text-slate-400">
-                Phân tích chi tiết cho cổ phiếu {id}
+                Phân tích chi tiết cho cổ phiếu {name}
               </p>
             </div>
 

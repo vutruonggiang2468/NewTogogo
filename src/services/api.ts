@@ -5,16 +5,17 @@ const api = axios.create({
   timeout: 10000,
 });
 
-export const getSymbolData = async (symbol: string) => {
+export const getSymbolData = async () => {
   const response = await api.get(`/stocks/symbols?limit=8`);
   if (!response) {
     throw new Error("Failed to fetch stock data");
   }
   return response.data;
 };
-export const getCompanyDetails = async (symbolId: string | number) => {
+export const getCompanyDetails = async (symbolId: string) => {
+  console.log("aaa", symbolId);
   const endpoints = [
-    { key: "symbolData", url: `/stocks/symbols/96` },
+    { key: "symbolData", url: `/stocks/symbols/${symbolId}` },
     { key: "balanceData", url: `/calculate/balances/659` },
     { key: "incomeData", url: `/calculate/incomes/659` },
     { key: "cashflowData", url: `/calculate/cashflows/659` },

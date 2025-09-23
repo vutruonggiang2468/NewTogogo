@@ -16,8 +16,6 @@ export default function OverviewTab({
   data,
   isPositive,
 }: OverviewTabProps) {
-  console.log("OverviewTab data:", data);
-
   return (
     <div className="space-y-6 mt-0">
       {/* Stock Chart - Full Width */}

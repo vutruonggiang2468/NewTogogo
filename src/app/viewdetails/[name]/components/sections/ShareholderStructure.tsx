@@ -39,8 +39,6 @@ export function ShareholderStructure({
     ? (largest6.share_own_percent * 100).toFixed(2)
     : "0.00";
 
-  console.log("Largest shareholder:", largest?.share_own_percent);
-  // console.log("ShareholderStructure data:", data?.company.shareholders.share_own_percent);
   return (
     <div className="p-6 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-2xl border-2 border-cyan-400/30 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-600/10 to-teal-600/10 rounded-full blur-2xl"></div>

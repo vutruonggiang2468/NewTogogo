@@ -7,7 +7,6 @@ interface SubsidiariesProps {
 }
 
 export function Subsidiaries({ subsidiaries, data }: SubsidiariesProps) {
-  console.log("Subsidiaries data:", data);
   return (
     <div className="p-6 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl border-2 border-indigo-400/30 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-600/10 to-purple-600/10 rounded-full blur-2xl"></div>

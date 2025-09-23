@@ -25,13 +25,6 @@ export default function Home() {
     hour: "2-digit",
     minute: "2-digit",
   });
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const handleViewDetails = (stockCode: string) => {
     setSelectedStock(stockCode);

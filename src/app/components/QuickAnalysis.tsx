@@ -1,5 +1,8 @@
 "use client";
+
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +19,8 @@ import {
   ArrowDownRight,
   Minus,
 } from "lucide-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
 import { getSymbolData } from "@/services/api";
+import { useSymbolStore } from "@/store/symbol.store";
 
 const getTrendIcon = (trend: string) => {
   return trend === "up" ? (
@@ -62,7 +64,6 @@ export function QuickAnalysis() {
   const [selectedStock, setSelectedStock] = useState("VSC");
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { slug } = useParams<{ slug: string }>();
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<SymbolByNameData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -76,8 +77,9 @@ export function QuickAnalysis() {
   useEffect(() => {
     const fetchSymbols = async () => {
       try {
-        const data = await getSymbolData(selectedStock);
+        const data = await getSymbolData();
         setData(data);
+        useSymbolStore.getState().setSymbolMap(data);
       } catch (err) {
         setError("Không lấy được dữ liệu symbol");
         console.error(err);
@@ -92,7 +94,6 @@ export function QuickAnalysis() {
 
   const selectedData = data?.find((stock) => stock.name === selectedStock);
 
-  console.log("Data  fix:", selectedData);
   return (
     <div className="space-y-6">
       {/* Stock Selection Cards */}
