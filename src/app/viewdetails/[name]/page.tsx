@@ -144,7 +144,7 @@ export default function DetailedAnalysisPage() {
             </Card>
 
             <div className="relative max-w-xl mx-auto mb-6">
-              <div className="relative">
+              {/* <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <Input
                   value={searchQuery}
@@ -159,7 +159,7 @@ export default function DetailedAnalysisPage() {
                   placeholder="Tìm kiếm mã khác..."
                   className="pl-10 py-2 border border-blue-400/30 rounded-lg bg-slate-800/60 text-white placeholder:text-slate-400 text-sm"
                 />
-              </div>
+              </div> */}
 
               {showSearchSuggestions &&
                 searchQuery &&

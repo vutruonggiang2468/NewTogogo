@@ -20,8 +20,12 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useAuthStore } from "@/store/auth.store";
+import { getCompanyDetails, getNameData } from "@/services/api";
+import { useRouter } from "next/navigation";
+import { searchStockSuggestions, StockSuggestion } from "@/constants/stockSuggestions";
 
 type UserProfile = {
+  
   email?: string;
   name?: string;
   first_name?: string;
@@ -30,6 +34,9 @@ type UserProfile = {
   displayName?: string;
   [key: string]: unknown;
 };
+interface HeaderProps {
+  data: any;
+}
 
 const PROFILE_ENDPOINT = "http://192.168.31.248:8000/api/auth/profile";
 
@@ -116,6 +123,7 @@ const extractProfileRecord = (
   return null;
 };
 
+
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -125,8 +133,14 @@ export function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   // const [user, setUser] = useState<UserProfile | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<StockSuggestion[]>([]);
 
   const { user, isLoggedIn, logout } = useAuthStore();
+  const router = useRouter();
 
   // const userDisplayName = resolveDisplayName(user);
   // const showAuthLinks = !userDisplayName && !isCheckingAuth;
@@ -318,44 +332,102 @@ export function Header() {
     setIsProfileMenuOpen(false);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Searching for:", searchQuery, "in", activeSearchFilter);
-    // Handle search logic here
+  // Handle search input change
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim().length > 0) {
+      const newSuggestions = searchStockSuggestions(value, 6);
+      setSuggestions(newSuggestions);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
   };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (stockCode: string) => {
+    setSearchQuery(stockCode);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    // Immediately navigate to search results
+    router.push(`/search?q=${encodeURIComponent(stockCode)}`);
+  };
+
+  // Handle focus and blur for suggestions
+  const handleSearchFocus = () => {
+    if (searchQuery.trim().length > 0) {
+      const newSuggestions = searchStockSuggestions(searchQuery, 6);
+      setSuggestions(newSuggestions);
+      if (newSuggestions.length > 0) {
+        setShowSuggestions(true);
+      }
+    }
+  };
+
+  const handleSearchBlur = () => {
+    // Delay hiding suggestions to allow clicks
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
+  };
+
+ 
+
   const [dateStr, setDateStr] = useState("");
 
-  useEffect(() => {
-    const updateDate = () => {
-      const now = new Date();
+useEffect(() => {
+  const now = new Date();
 
-      // Map thứ
-      const weekdays = [
-        "Chủ nhật",
-        "Thứ 2",
-        "Thứ 3",
-        "Thứ 4",
-        "Thứ 5",
-        "Thứ 6",
-        "Thứ 7",
-      ];
+  // Map thứ
+  const weekdays = [
+    "Chủ nhật",
+    "Thứ 2",
+    "Thứ 3",
+    "Thứ 4",
+    "Thứ 5",
+    "Thứ 6",
+    "Thứ 7",
+  ];
 
-      const dayName = weekdays[now.getDay()];
-      const day = String(now.getDate()).padStart(2, "0");
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const year = now.getFullYear();
+  const dayName = weekdays[now.getDay()];
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
 
-      setDateStr(`${dayName}, ${day}/${month}/${year}`);
-    };
+  setDateStr(`${dayName}, ${day}/${month}/${year}`);
+}, []);
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
 
-    updateDate(); // chạy lần đầu
-    const timer = setInterval(updateDate, 60 * 1000); // cập nhật mỗi phút
-    return () => clearInterval(timer);
-  }, []);
+    setError(null);
+    setResult(null);
+    setLoading(true);
+
+    try {
+      const data = await getNameData(searchQuery.trim().toUpperCase());
+      console.log("Kết quả:", data);
+      setResult(data);
+
+      // Điều hướng đến trang search results với query parameter
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    } catch (err) {
+      console.error("Search error:", err);
+      setError("Không tìm thấy mã này");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   return (
+    
     <header
-      className={`bg-gray-900/95 border-b border-gray-600/30 fixed top-0 left-0 right-0 z-50 shadow-xl backdrop-blur-md transition-transform duration-300 ease-in-out ${
+      className={`bg-gray-900/95 border-b border-gray-600/30 fixed top-0 left-0 right-0 z-[100] shadow-xl backdrop-blur-md transition-transform duration-300 ease-in-out ${
         isHeaderVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
@@ -556,59 +628,112 @@ export function Header() {
         </div>
 
         {/* Desktop Navigation - Enhanced Search Bar */}
-        <div className="hidden md:block py-4">
-          <div className="max-w-4xl mx-auto">
-            {/* Search Bar with Filter Tabs - Enhanced */}
-            <div className="bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-2xl p-1 shadow-inner border border-blue-400/20 backdrop-blur-sm">
-              <div className="flex items-center">
-                {/* Filter Tabs - Enhanced */}
-                <div className="flex bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-xl shadow-sm mr-3 border border-blue-400/20">
+        <div className="hidden md:block py-3 lg:py-4">
+          <div className="max-w-6xl mx-auto px-2 lg:px-4">
+            {/* Search Bar with Filter Tabs - Responsive Enhanced */}
+            <div className="bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-xl lg:rounded-2xl p-1 shadow-inner border border-blue-400/20 backdrop-blur-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0">
+                {/* Filter Tabs - Responsive */}
+                <div className="flex bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-lg lg:rounded-xl shadow-sm lg:mr-3 border border-blue-400/20 overflow-x-auto">
                   {searchFilters.map((filter) => (
                     <button
                       key={filter.label}
                       onClick={() => setActiveSearchFilter(filter.label)}
-                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-xl ${
+                      className={`flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-2 text-xs lg:text-sm font-medium transition-all rounded-lg lg:rounded-xl whitespace-nowrap ${
                         activeSearchFilter === filter.label
                           ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm"
                           : "text-slate-300 hover:text-white hover:bg-blue-500/20"
                       }`}
                     >
-                      {filter.icon}
-                      <span>{filter.label}</span>
+                      <span className="w-3 h-3 lg:w-4 lg:h-4">{filter.icon}</span>
+                      <span className="hidden sm:inline lg:inline">{filter.label}</span>
+                      <span className="sm:hidden lg:hidden">{filter.label.slice(0, 3)}</span>
                     </button>
                   ))}
                 </div>
 
-                {/* Search Input - Enhanced */}
-                <form onSubmit={handleSearch} className="flex-1 relative">
-                  <Search className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                {/* Search Input - Responsive Enhanced */}
+                <form onSubmit={handleSearch} className="flex-1 relative min-w-0">
+                  <Search className="w-4 h-4 lg:w-5 lg:h-5 absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <Input
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={`Tìm kiếm ${activeSearchFilter.toLowerCase()}... (VD: VSC, HPG, tin tức ngân hàng)`}
-                    className="pl-12 pr-20 py-3 text-base bg-gradient-to-r from-slate-800/60 to-slate-700/60 border-0 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-0 transition-all text-white placeholder-slate-400"
+                    onChange={handleSearchInputChange}
+                    onFocus={handleSearchFocus}
+                    onBlur={handleSearchBlur}
+                    placeholder={`Tìm ${activeSearchFilter.toLowerCase()}... (VD: VSC, HPG)`}
+                    className="pl-10 lg:pl-12 pr-16 lg:pr-20 py-2.5 lg:py-3 text-sm lg:text-base bg-gradient-to-r from-slate-800/60 to-slate-700/60 border-0 rounded-lg lg:rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-0 transition-all text-white placeholder-slate-400"
                   />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="text-xs px-2 py-1 text-slate-400 bg-slate-600/50 border-slate-500"
-                    >
-                      ⌘K
-                    </Badge>
+                  <div className="absolute right-2 lg:right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1 lg:gap-2">
                     <Button
                       type="submit"
                       size="sm"
-                      className="px-3 py-1.5 text-xs bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                      className="px-2 lg:px-3 py-1 lg:py-1.5 text-xs bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
                     >
-                      Tìm
+                      <span className="hidden lg:inline">Tìm</span>
+                      <Search className="w-3 h-3 lg:hidden" />
                     </Button>
                   </div>
                 </form>
               </div>
             </div>
 
+            {/* Stock Suggestions - Responsive Enhanced */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="mt-2 bg-gradient-to-br from-slate-800/95 to-slate-700/95 rounded-lg shadow-xl border border-blue-400/30 py-2 w-full max-w-4xl mx-auto backdrop-blur-sm relative z-50">
+                <div className="px-3 sm:px-4 py-2 text-xs text-slate-400 border-b border-blue-400/20">
+                  <span className="hidden sm:inline">Gợi ý mã cổ phiếu ({suggestions.length} kết quả)</span>
+                  <span className="sm:hidden">Gợi ý ({suggestions.length})</span>
+                </div>
+                <div className="space-y-0.5 sm:space-y-1">
+                  {suggestions.map((suggestion, index) => (
+                    <div
+                      key={suggestion.code}
+                      onClick={() => handleSuggestionClick(suggestion.code)}
+                      className="px-3 sm:px-4 py-2 sm:py-3 hover:bg-blue-500/20 cursor-pointer flex items-center justify-between transition-colors group"
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        {/* Avatar - responsive size */}
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-xs sm:text-xs">{suggestion.code.length > 3 ? suggestion.code.slice(0, 3) : suggestion.code}</span>
+                        </div>
+
+                        {/* Content - responsive layout */}
+                        <div className="flex-1 min-w-0">
+                          {/* Desktop & Tablet layout */}
+                          <div className="hidden sm:block">
+                            <div className="text-sm font-medium text-white group-hover:text-blue-200 transition-colors">
+                              {suggestion.code} - {suggestion.name}
+                            </div>
+                            <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                              {suggestion.sector}
+                            </div>
+                          </div>
+
+                          {/* Mobile layout */}
+                          <div className="sm:hidden">
+                            <div className="text-sm font-medium text-white group-hover:text-blue-200 transition-colors truncate">
+                              {suggestion.code}
+                            </div>
+                            <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors truncate">
+                              {suggestion.name.length > 20 ? suggestion.name.slice(0, 20) + '...' : suggestion.name}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tag - hide on very small screens */}
+                      <div className="hidden xs:block text-xs text-slate-500 group-hover:text-slate-400 transition-colors flex-shrink-0 ml-2">
+                        <span className="hidden sm:inline">Cổ phiếu</span>
+                        <span className="sm:hidden">CP</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Search Suggestions - Enhanced */}
-            {searchQuery && (
+            {/* {searchQuery && !showSuggestions && (
               <div className="mt-2 bg-gradient-to-br from-slate-800/90 to-slate-700/90 rounded-lg shadow-xl border border-blue-400/30 py-2 max-w-4xl mx-auto backdrop-blur-sm">
                 <div className="px-4 py-2 text-xs text-slate-400 border-b border-blue-400/20">
                   Gợi ý tìm kiếm trong &quot;{activeSearchFilter}&quot;
@@ -682,7 +807,7 @@ export function Header() {
                   )}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
@@ -710,21 +835,65 @@ export function Header() {
               </div>
 
               {/* Mobile Search Input - Enhanced */}
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <Input
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchInputChange}
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
                   placeholder={`Tìm ${activeSearchFilter.toLowerCase()}...`}
                   className="pl-10 pr-12 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border-blue-400/20 text-white placeholder-slate-400"
                 />
                 <Button
+                  type="submit"
                   size="sm"
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs bg-gradient-to-r from-blue-500 to-cyan-500"
                 >
                   Tìm
                 </Button>
-              </div>
+              </form>
+
+              {/* Mobile Stock Suggestions - Responsive */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="mt-2 bg-gradient-to-br from-slate-800/95 to-slate-700/95 rounded-lg shadow-xl border border-blue-400/30 py-2 backdrop-blur-sm relative z-50">
+                  <div className="px-3 py-2 text-xs text-slate-400 border-b border-blue-400/20">
+                    Gợi ý ({suggestions.length})
+                  </div>
+                  <div className="space-y-0.5 max-h-64 overflow-y-auto">
+                    {suggestions.map((suggestion) => (
+                      <div
+                        key={suggestion.code}
+                        onClick={() => handleSuggestionClick(suggestion.code)}
+                        className="px-3 py-2.5 hover:bg-blue-500/20 active:bg-blue-500/30 cursor-pointer flex items-center gap-3 transition-all group touch-manipulation"
+                      >
+                        {/* Avatar */}
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <span className="text-white font-bold text-xs">{suggestion.code.length > 3 ? suggestion.code.slice(0, 3) : suggestion.code}</span>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm font-medium text-white group-hover:text-blue-200 transition-colors">
+                              {suggestion.code}
+                            </div>
+                            <div className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors ml-2">
+                              CP
+                            </div>
+                          </div>
+                          <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors truncate">
+                            {suggestion.name.length > 25 ? suggestion.name.slice(0, 25) + '...' : suggestion.name}
+                          </div>
+                          <div className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
+                            {suggestion.sector}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Mobile Market Info - Enhanced */}

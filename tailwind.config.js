@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+      },
       keyframes: {
         marquee: {
           "0%":   { transform: "translateX(100%)" },
