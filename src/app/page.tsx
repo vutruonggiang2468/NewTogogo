@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useEffect } from "react";
-import { ChartColumnBig, Clock, Eye, Sparkles } from "lucide-react";
+import { ChartColumnBig, Clock, Eye, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeepAnalysisPage } from "./components/DeepAnalysisPage";
@@ -19,12 +19,8 @@ export default function Home() {
   >("home");
   const [selectedStock, setSelectedStock] = useState<string>("");
   const [selectedArticle, setSelectedArticle] = useState<number>(1);
+  const [time, setTime] = useState("");
 
-  const [time, setTime] = useState(new Date());
-  const formattedTime = time.toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
   const handleViewDetails = (stockCode: string) => {
     setSelectedStock(stockCode);
@@ -55,10 +51,27 @@ export default function Home() {
       />
     );
   }
+  
 
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const formatted = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setTime(formatted);
+    };
+
+    updateClock(); // chạy lần đầu
+    const interval = setInterval(updateClock, 1000); // update mỗi giây
+    return () => clearInterval(interval);
+  }, []);
+  
   if (currentView === "deep-analysis") {
     return <DeepAnalysisPage onBack={handleBackToHome} />;
   }
+
   return (
     <div className="min-h-screen">
       {/* Add top padding to account for fixed header (smaller on mobile) */}
@@ -86,7 +99,7 @@ export default function Home() {
                   </Badge>
                 </div>
                 <div className="text-xs text-gray-400 bg-gray-800/60 px-2 py-1 rounded">
-                  12:45 PM
+                  {time}
                 </div>
               </div>
               <QuickAnalysis />
@@ -150,10 +163,8 @@ export default function Home() {
                 <div className="absolute bottom-4 right-4 w-24 h-24 bg-gradient-to-tl from-emerald-400/10 to-transparent rounded-full blur-xl"></div>
                 <CardContent className="p-4 relative z-10">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-1.5 h-10 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
-                    <h3 className="font-bold text-2xl text-white">
-                      Tin tức mới nhất
-                    </h3>
+                    <div className="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
+                    <h3 className="font-bold text-white">Tin tức mới nhất</h3>
                     <Badge className="bg-blue-500/20 border-blue-500/50 text-blue-300 px-2 py-1 text-xs">
                       <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse mr-1"></div>
                       Live
@@ -162,190 +173,149 @@ export default function Home() {
 
                   {/* Grid layout for news items - 2 columns, 3 rows */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/8 via-transparent to-emerald-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-emerald-400/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="flex items-start gap-3 relative z-10">
-                        <div className="w-2 h-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0 animate-pulse"></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors">
-                            VN-Index vượt mốc 1,280 điểm trong phiên chiều với
-                            thanh khoản cao
-                          </h4>
-                          <p className="text-gray-300 text-base mb-3 leading-relaxed">
-                            Chỉ số VN-Index tiếp tục đà tăng mạnh với thanh
-                            khoản đạt gần 15,000 tỷ đồng, được dẫn dắt bởi nhóm
-                            ngân hàng và bất động sản.
-                          </p>
-                          <div className="flex items-center gap-4 text-base text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>2h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>12.5K</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    {(() => {
+                      // Sample news data based on the JSON format provided
+                      const newsData = [
+                        {
+                          id: 19,
+                          title: "SAV: Giải trình chênh lệch lợi nhuận 6 tháng đầu năm 2025 so với cùng kỳ năm trước",
+                          news_image_url: "https://cdn.fiingroup.vn/medialib/127889/I/2024/12/03/10505782769750700_SAV.png",
+                          news_source_link: "https://www.hsx.vn/vi/tin-tuc/sav-giai-trinh-chenh-lech-loi-nhuan-6-thang-dau-nam-2025-so-voi-cung-ky-nam-truoc/2397315",
+                          price_change_pct: 0,
+                          public_date: 1755194101
+                        },
+                        {
+                          id: 20,
+                          title: "SAV: Báo cáo tình hình quản trị công ty 06 tháng đầu năm 2025",
+                          news_image_url: "https://cdn.fiingroup.vn/medialib/127889/I/2024/12/03/10505782769750700_SAV.png",
+                          news_source_link: "https://www.hsx.vn/vi/tin-tuc/sav-bao-cao-tinh-hinh-quan-tri-cong-ty-06-thang-dau-nam-2025/2390803",
+                          price_change_pct: 0,
+                          public_date: 1753291378
+                        },
+                        {
+                          id: 21,
+                          title: "SAV: Giải trình biến động KQKD quý 2/2025 so với cùng kỳ năm trước",
+                          news_image_url: "https://cdn.fiingroup.vn/medialib/127889/I/2024/12/03/10505782769750700_SAV.png",
+                          news_source_link: "https://www.hsx.vn/vi/tin-tuc/sav-giai-trinh-bien-dong-kqkd-quy-22025-so-voi-cung-ky-nam-truoc/2389448",
+                          price_change_pct: 0,
+                          public_date: 1752857880
+                        },
+                        {
+                          id: 22,
+                          title: "SAV: Thông báo về việc ký hợp đồng kiểm toán BCTC năm 2025",
+                          news_image_url: "https://cdn.fiingroup.vn/medialib/127889/I/2024/12/03/10505782769750700_SAV.png",
+                          news_source_link: "https://www.hsx.vn/vi/tin-tuc/sav-thong-bao-ve-viec-ky-hop-dong-kiem-toan-bctc-nam-2025/2384342",
+                          price_change_pct: 0,
+                          public_date: 1751046522
+                        },
+                        {
+                          id: 23,
+                          title: "SAV: Giấy chứng nhận đăng ký doanh nghiệp thay đổi lần thứ 24",
+                          news_image_url: "https://cdn.fiingroup.vn/medialib/127889/I/2024/12/03/10505782769750700_SAV.png",
+                          news_source_link: "https://www.hsx.vn/vi/tin-tuc/sav-giay-chung-nhan-dang-ky-doanh-nghiep-thay-doi-lan-thu-24/2383962",
+                          price_change_pct: -0.01,
+                          public_date: 1750958966
+                        },
+                        {
+                          id: 24,
+                          title: "VN-Index vượt mốc 1,280 điểm trong phiên chiều với thanh khoản cao",
+                          news_image_url: "",
+                          news_source_link: "",
+                          price_change_pct: 2.15,
+                          public_date: Date.now() / 1000 - 7200 // 2 hours ago
+                        }
+                      ];
 
-                    <div className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/8 via-transparent to-blue-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-blue-400/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="flex items-start gap-3 relative z-10">
-                        <div
-                          className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0 animate-pulse"
-                          style={{ animationDelay: "0.5s" }}
-                        ></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors">
-                            Khối ngoại mua ròng 500 tỷ đồng, tập trung vào nhóm
-                            ngân hàng
-                          </h4>
-                          <p className="text-gray-300 text-base mb-3 leading-relaxed">
-                            Dòng tiền từ khối ngoại tiếp tục đổ mạnh vào thị
-                            trường, VSC, TCB, BID là những mã được quan tâm
-                            nhất.
-                          </p>
-                          <div className="flex items-center gap-4 text-base text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>3h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>8.2K</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      // Color themes for different news items
+                      const colorThemes = [
+                        { bg: 'emerald-400', delay: '0s' },
+                        { bg: 'blue-400', delay: '0.5s' },
+                        { bg: 'purple-400', delay: '1s' },
+                        { bg: 'red-400', delay: '1.5s' },
+                        { bg: 'yellow-400', delay: '2s' },
+                        { bg: 'orange-400', delay: '2.5s' }
+                      ];
 
-                    <div className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-400/8 via-transparent to-purple-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="absolute top-0 left-0 w-18 h-18 bg-gradient-to-br from-purple-400/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="flex items-start gap-3 relative z-10">
-                        <div
-                          className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0 animate-pulse"
-                          style={{ animationDelay: "1s" }}
-                        ></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors">
-                            HPG công bố kết quả kinh doanh Q4 vượt kỳ vọng
-                          </h4>
-                          <p className="text-gray-300 text-base mb-3 leading-relaxed">
-                            Tập đoàn Hòa Phát ghi nhận doanh thu Q4/2024 đạt
-                            45,600 tỷ đồng, lợi nhuận vượt 15% so với dự báo.
-                          </p>
-                          <div className="flex items-center gap-4 text-base text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>4h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>6.1K</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      // Function to format relative time
+                      const formatRelativeTime = (timestamp: number): string => {
+                        const now = Date.now() / 1000;
+                        const diff = now - timestamp;
 
-                    <div className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-red-400/8 via-transparent to-red-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-red-400/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="flex items-start gap-3 relative z-10">
-                        <div
-                          className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0 animate-pulse"
-                          style={{ animationDelay: "1.5s" }}
-                        ></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors">
-                            Fed cắt giảm lãi suất 0.25%, tác động tích cực đến
-                            TTCK Việt Nam
-                          </h4>
-                          <p className="text-gray-300 text-base mb-3 leading-relaxed">
-                            Quyết định của Fed giúp giảm áp lực lên USD, dự báo
-                            VN-Index có thể hướng tới 1,350 điểm.
-                          </p>
-                          <div className="flex items-center gap-4 text-base text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>5h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>15.3K</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                        if (diff < 3600) {
+                          return `${Math.floor(diff / 60)}m`;
+                        } else if (diff < 86400) {
+                          return `${Math.floor(diff / 3600)}h`;
+                        } else {
+                          return `${Math.floor(diff / 86400)}d`;
+                        }
+                      };
 
-                    <div className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/8 via-transparent to-yellow-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-yellow-400/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="flex items-start gap-3 relative z-10">
-                        <div
-                          className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0 animate-pulse"
-                          style={{ animationDelay: "2s" }}
-                        ></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors">
-                            Chính phủ công bố gói hỗ trợ phục hồi kinh tế
-                            120,000 tỷ đồng
-                          </h4>
-                          <p className="text-gray-300 text-base mb-3 leading-relaxed">
-                            Gói hỗ trợ tập trung vào hạ tầng, công nghệ và phát
-                            triển bền vững, kỳ vọng thúc đẩy tăng trưởng GDP
-                            2025.
-                          </p>
-                          <div className="flex items-center gap-4 text-base text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>6h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>9.8K</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      // Function to generate short description based on title
+                      const generateDescription = (title: string): string => {
+                        if (title.includes('SAV')) {
+                          return 'Công ty Cổ phần Vàng bạc Đá quý Sài Gòn (SAV) công bố thông tin tài chính và vận hành trong kỳ báo cáo.';
+                        } else if (title.includes('VN-Index')) {
+                          return 'Chỉ số VN-Index tiếp tục đà tăng mạnh với thanh khoản cao, được dẫn dắt bởi nhóm ngân hàng và bất động sản.';
+                        }
+                        return 'Thông tin quan trọng về thị trường chứng khoán và các doanh nghiệp niêm yết.';
+                      };
 
-                    <div className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-orange-400/8 via-transparent to-orange-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="absolute bottom-0 left-0 w-18 h-18 bg-gradient-to-tr from-orange-400/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      <div className="flex items-start gap-3 relative z-10">
-                        <div
-                          className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0 animate-pulse"
-                          style={{ animationDelay: "2.5s" }}
-                        ></div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors">
-                            Bitcoin tăng vượt $45,000, dòng tiền crypto ảnh
-                            hưởng CK công nghệ
-                          </h4>
-                          <p className="text-gray-300 text-base mb-3 leading-relaxed">
-                            FPT, CMG, VNG dự kiến hưởng lợi từ xu hướng phục hồi
-                            của thị trường cryptocurrency.
-                          </p>
-                          <div className="flex items-center gap-4 text-base text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                              <span>7h</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>7.2K</span>
+                      // Function to generate view count
+                      const generateViewCount = (id: number): string => {
+                        const baseCount = 1000 + (id * 123) % 20000;
+                        if (baseCount >= 1000) {
+                          return `${(baseCount / 1000).toFixed(1)}K`;
+                        }
+                        return baseCount.toString();
+                      };
+
+                      return newsData.slice(0, 6).map((news, index) => {
+                        const theme = colorThemes[index];
+                        return (
+                          <div
+                            key={news.id}
+                            className="p-4 bg-gray-800/60 rounded-lg border border-gray-600/40 hover:border-gray-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-gray-800/80 relative overflow-hidden group"
+                            onClick={() => news.news_source_link && window.open(news.news_source_link, '_blank')}
+                          >
+                            <div className={`absolute inset-0 bg-gradient-to-br from-${theme.bg}/8 via-transparent to-${theme.bg}/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                            <div className={`absolute ${index % 4 === 0 ? 'top-0 right-0' : index % 4 === 1 ? 'bottom-0 left-0' : index % 4 === 2 ? 'top-0 left-0' : 'bottom-0 right-0'} w-16 h-16 bg-gradient-to-${index % 4 === 0 ? 'bl' : index % 4 === 1 ? 'tr' : index % 4 === 2 ? 'br' : 'tl'} from-${theme.bg}/6 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                            <div className="flex items-start gap-3 relative z-10">
+                              <div className={`w-2 h-2 bg-${theme.bg} rounded-full mt-2 flex-shrink-0 animate-pulse`} style={{ animationDelay: theme.delay }}></div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold mb-2 text-white leading-tight text-base hover:text-gray-100 transition-colors line-clamp-2">
+                                  {news.title}
+                                </h4>
+                                <p className="text-gray-300 text-sm mb-3 leading-relaxed line-clamp-2">
+                                  {generateDescription(news.title)}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm text-gray-400">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                    <span>{formatRelativeTime(news.public_date)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Eye className="w-3.5 h-3.5 text-gray-400" />
+                                    <span>{generateViewCount(news.id)}</span>
+                                  </div>
+                                  {news.price_change_pct !== 0 && (
+                                    <div className="flex items-center gap-1">
+                                      {news.price_change_pct > 0 ? (
+                                        <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                                      ) : (
+                                        <TrendingDown className="w-3.5 h-3.5 text-red-400" />
+                                      )}
+                                      <span className={news.price_change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}>
+                                        {news.price_change_pct > 0 ? '+' : ''}{(news.price_change_pct * 100).toFixed(1)}%
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </CardContent>
               </Card>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   DollarSign,
   ChevronRight,
@@ -43,12 +43,86 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
     [key: string]: boolean;
   }>({});
 
-  // Add state for selected year and quarter
-  const [selectedYear, setSelectedYear] = useState<number>(2024);
-  const [selectedQuarter, setSelectedQuarter] = useState<number>(1);
-
   // Get stock info from data prop
   const stock = data?.stock || { code: "N/A" };
+
+  const balanceEntries = useMemo(() => {
+    if (!Array.isArray(data?.balanceData)) return [] as Array<Record<string, unknown>>;
+
+    return [...data.balanceData].sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.quarter - a.quarter;
+    });
+  }, [data?.balanceData]);
+
+  const [selectedYear, setSelectedYear] = useState<number | null>(() =>
+    balanceEntries[0]?.year ?? null
+  );
+  const [selectedQuarter, setSelectedQuarter] = useState<number | null>(() =>
+    balanceEntries[0]?.quarter ?? null
+  );
+
+  useEffect(() => {
+    const latestEntry = balanceEntries[0];
+    if (!latestEntry) {
+      setSelectedYear(null);
+      setSelectedQuarter(null);
+      return;
+    }
+
+    setSelectedYear((prev) =>
+      prev !== null && balanceEntries.some((entry) => entry.year === prev)
+        ? prev
+        : latestEntry.year
+    );
+  }, [balanceEntries]);
+
+  useEffect(() => {
+    if (selectedYear === null) {
+      setSelectedQuarter(null);
+      return;
+    }
+
+    const quartersForYear = balanceEntries
+      .filter((entry) => entry.year === selectedYear)
+      .map((entry) => entry.quarter)
+      .sort((a, b) => b - a);
+
+    if (!quartersForYear.length) {
+      setSelectedQuarter(null);
+      return;
+    }
+
+    setSelectedQuarter((prev) =>
+      prev !== null && quartersForYear.includes(prev) ? prev : quartersForYear[0]
+    );
+  }, [balanceEntries, selectedYear]);
+
+  const availableYears = useMemo(
+    () =>
+      Array.from(new Set(balanceEntries.map((entry) => entry.year))).sort(
+        (a, b) => b - a
+      ),
+    [balanceEntries]
+  );
+
+  const availableQuarters = useMemo(() => {
+    if (selectedYear === null) return [] as number[];
+    return balanceEntries
+      .filter((entry) => entry.year === selectedYear)
+      .map((entry) => entry.quarter)
+      .sort((a, b) => b - a);
+  }, [balanceEntries, selectedYear]);
+
+  const currentBalance = useMemo(() => {
+    if (selectedYear === null || selectedQuarter === null) return null;
+
+            return (
+      balanceEntries.find(
+        (entry) => entry.year === selectedYear && entry.quarter === selectedQuarter
+      ) ?? null
+    );
+  }, [balanceEntries, selectedYear, selectedQuarter]);
 
   // Group data by year and sort
   const groupedData = useMemo(() => {
@@ -129,11 +203,11 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
             <div className="flex gap-3 flex-wrap">
               <Badge className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/10 text-emerald-400 px-4 py-2 border border-emerald-400/30">
                 <CheckCircle className="w-3 h-3 mr-2" />
-                Q{selectedQuarter} {selectedYear}
+                Q{selectedQuarter ?? "-"} {selectedYear ?? "-"}
               </Badge>
               <Badge className="bg-gradient-to-r from-blue-500/20 to-cyan-500/10 text-cyan-400 px-4 py-2 border border-cyan-400/30">
                 <Star className="w-3 h-3 mr-2" />
-                {stock.code} - HSX
+                {currentBalance?.symbol?.exchange ?? stock.code ?? "HSX"}
               </Badge>
             </div>
           </div>
@@ -148,40 +222,59 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                 </div>
 
                 <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  value={selectedYear ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedYear(value ? parseInt(value, 10) : null);
+                  }}
                   className="px-3 py-2 bg-slate-700/60 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-400/50 transition-all"
+                  disabled={!availableYears.length}
                 >
-                  <option value="2023">2023</option>
-                  <option value="2024">2024</option>
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
+                  {availableYears.length ? (
+                    availableYears.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Khong co du lieu</option>
+                  )}
                 </select>
 
                 <div className="flex items-center gap-1 p-1 bg-slate-700/60 rounded-lg border border-slate-600/50">
-                  {[1, 2, 3, 4].map((quarter) => (
-                    <button
-                      key={quarter}
-                      onClick={() => setSelectedQuarter(quarter)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${selectedQuarter === quarter
-                        ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-cyan-400 border border-cyan-400/30'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-600/50'
+                  {availableQuarters.length ? (
+                    availableQuarters.map((quarter) => (
+                      <button
+                        key={quarter}
+                        type="button"
+                        onClick={() => setSelectedQuarter(quarter)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
+                          selectedQuarter === quarter
+                            ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-cyan-400 border border-cyan-400/30'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-600/50'
                         }`}
-                    >
-                      Q{quarter}
-                    </button>
-                  ))}
+                      >
+                        Q{quarter}
+                      </button>
+                    ))
+                  ) : (
+                    <span className="px-3 py-1.5 text-xs text-slate-500">Khong co quy</span>
+                  )}
                 </div>
               </div>
-
               <div className="text-sm text-slate-400">
                 {(() => {
                   const quarterEndDates = { 1: 'Mar 31', 2: 'Jun 30', 3: 'Sep 30', 4: 'Dec 31' };
                   const quarterFileDates = { 1: 'Apr 15', 2: 'Jul 15', 3: 'Oct 15', 4: 'Jan 15' };
-                  const endDate = quarterEndDates[selectedQuarter as keyof typeof quarterEndDates];
-                  const fileDate = quarterFileDates[selectedQuarter as keyof typeof quarterFileDates];
+
+                  if (selectedQuarter === null || selectedYear === null) {
+                    return "Period: --";
+                  }
+
+                  const endDate = quarterEndDates[selectedQuarter as keyof typeof quarterEndDates] ?? '--';
+                  const fileDate = quarterFileDates[selectedQuarter as keyof typeof quarterFileDates] ?? '--';
                   const fileYear = selectedQuarter === 4 ? selectedYear + 1 : selectedYear;
-                  return `Period: ${endDate}, ${selectedYear} • Filed: ${fileDate}, ${fileYear}`;
+                  return `Period: ${endDate}, ${selectedYear} - Filed: ${fileDate}, ${fileYear}`;
                 })()}
               </div>
             </div>
@@ -189,73 +282,65 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
 
           {/* Balance Sheet Content */}
           {(() => {
-            // Generate Balance Sheet Data based on the provided JSON structure
-            const generateBalanceSheetData = (year: number, quarter: number) => {
-              const yearFactor = 1 + (year - 2025) * 0.15;
-              const quarterFactor = 1 + (quarter - 2) * 0.05;
-              const adjustedFactor = yearFactor * quarterFactor * ({ 2023: 0.7, 2024: 0.85, 2025: 1.0, 2026: 1.2 }[year] || 1.0);
+            const balance = currentBalance;
+            if (!balance) {
+              return (
+                <div className="py-10 text-center text-slate-400">
+                  Khong co du lieu bang can doi cho ky da chon.
+                </div>
+              );
+            }
 
-              // Using the exact structure from your JSON
-              return {
-                year,
-                quarter,
-                symbol: {
-                  id: 659,
-                  name: stock.code,
-                  exchange: "HSX",
-                  updated_at: null,
-                  industries: [],
-                  company: null
-                },
-                current_assets: Math.round(4553020197155 * adjustedFactor),
-                cash_and_cash_equivalents: Math.round(1706426051965 * adjustedFactor),
-                short_term_investments: Math.round(229407600000 * adjustedFactor),
-                accounts_receivable: Math.round(1475454681315 * adjustedFactor),
-                net_inventories: Math.round(987232373973 * adjustedFactor),
-                prepayments_to_suppliers: Math.round(568507483830 * adjustedFactor),
-                other_current_assets: 0,
-                long_term_assets: Math.round(7606507839458 * adjustedFactor),
-                fixed_assets: Math.round(2811033855000 * adjustedFactor),
-                long_term_investments: Math.round(471212967601 * adjustedFactor),
-                long_term_prepayments: Math.round(968546871232 * adjustedFactor),
-                other_long_term_assets: Math.round(30456248808 * adjustedFactor),
-                other_long_term_receivables: Math.round(49769111022 * adjustedFactor),
-                long_term_trade_receivables: Math.round(348769111022 * adjustedFactor),
-                total_assets: 0, // Will be calculated
-                liabilities: Math.round(6314821127450 * adjustedFactor),
-                current_liabilities: Math.round(3190439932889 * adjustedFactor),
-                short_term_borrowings: Math.round(1857118597790 * adjustedFactor),
-                advances_from_customers: Math.round(146540910813 * adjustedFactor),
-                long_term_liabilities: Math.round(3124381194561 * adjustedFactor),
-                long_term_borrowings: Math.round(1049114542787 * adjustedFactor),
-                owners_equity: 0, // Will be calculated
-                capital_and_reserves: 0, // Will be calculated
-                common_shares: 3822744960000,
-                paid_in_capital: 3822744960000,
-                undistributed_earnings: Math.round(453286006746 * adjustedFactor),
-                investment_and_development_funds: Math.round(80481616464 * adjustedFactor),
-                total_resources: 0 // Will be calculated
-              };
+            const safeNumber = (value?: number | null) =>
+              typeof value === "number" && !Number.isNaN(value) ? value : 0;
+
+            const totals = {
+              totalAssets:
+                safeNumber(balance.total_assets) ||
+                safeNumber(balance.current_assets) + safeNumber(balance.long_term_assets),
+              currentAssets: safeNumber(balance.current_assets),
+              longTermAssets: safeNumber(balance.long_term_assets),
+              liabilities: safeNumber(balance.liabilities),
             };
 
-            const data = generateBalanceSheetData(selectedYear, selectedQuarter);
+            const ownersEquity =
+              safeNumber(balance.owners_equity) || totals.totalAssets - totals.liabilities;
+            const totalResources =
+              safeNumber(balance.total_resources) || totals.totalAssets;
 
-            // Calculate totals to ensure balance sheet equation
-            data.total_assets = data.current_assets + data.long_term_assets;
-            data.owners_equity = data.total_assets - data.liabilities;
-            data.capital_and_reserves = data.owners_equity;
-            data.total_resources = data.total_assets;
-
-            const formatVND = (amount: number) => {
-              if (amount >= 1000000000000) return `₫${(amount / 1000000000000).toFixed(1)}T`;
-              if (amount >= 1000000000) return `₫${(amount / 1000000000).toFixed(1)}B`;
-              if (amount >= 1000000) return `₫${(amount / 1000000).toFixed(1)}M`;
-              return `₫${amount.toLocaleString()}`;
+            const data = {
+              ...balance,
+              total_assets: totals.totalAssets,
+              current_assets: totals.currentAssets,
+              long_term_assets: totals.longTermAssets,
+              liabilities: totals.liabilities,
+              owners_equity: ownersEquity,
+              total_resources: totalResources,
             };
 
-            const calculatePercentage = (value: number, total: number) => ((value / total) * 100).toFixed(1);
-
-            return (
+            const formatVND = (amount?: number | null) => {
+              const value = safeNumber(amount);
+              if (value >= 1_000_000_000_000) {
+                return "₫" + (value / 1_000_000_000_000).toFixed(1) + "T";
+              }
+              if (value >= 1_000_000_000) {
+                return "₫" + (value / 1_000_000_000).toFixed(1) + "B";
+              }
+              if (value >= 1_000_000) {
+                return "₫" + (value / 1_000_000).toFixed(1) + "M";
+              }
+              return "₫" + value.toLocaleString("vi-VN");
+            };
+            const calculatePercentage = (
+              value?: number | null,
+              total?: number | null
+            ) => {
+              const numerator = safeNumber(value);
+              const denominator = safeNumber(total);
+              if (denominator === 0) return "0.0";
+              return ((numerator / denominator) * 100).toFixed(1);
+            };
+return (
               <>
                 {/* Summary Cards */}
                 <div className="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -268,7 +353,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                     </div>
                     <div className="text-sm text-emerald-300 mb-1">Total Assets</div>
                     <div className="text-2xl font-bold text-white mb-2">{formatVND(data.total_assets)}</div>
-                    <div className="text-xs text-slate-400">Company's total resources</div>
+                    <div className="text-xs text-slate-400">Company&apos;s total resources</div>
                   </div>
 
                   <div className="p-6 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 rounded-xl border border-cyan-400/40">
@@ -302,7 +387,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                       </div>
                       <TrendingUp className="w-6 h-6 text-blue-400" />
                     </div>
-                    <div className="text-sm text-blue-300 mb-1">Owners' Equity</div>
+                    <div className="text-sm text-blue-300 mb-1">Owners&apos; Equity</div>
                     <div className="text-2xl font-bold text-white mb-2">{formatVND(data.owners_equity)}</div>
                     <div className="text-xs text-slate-400">{calculatePercentage(data.owners_equity, data.total_assets)}% of assets</div>
                   </div>
@@ -455,7 +540,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-slate-300">Số lượng cổ phần phổ thông</span>
-                          <span className="text-sm font-medium text-white">{data.common_shares.toLocaleString()}</span>
+                          <span className="text-sm font-medium text-white">{data.common_shares ? data.common_shares.toLocaleString("vi-VN") : "–"}</span>
                         </div>
                       </div>
                     </div>
