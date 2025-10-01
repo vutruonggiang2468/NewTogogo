@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Search, Filter, SortAsc, SortDesc } from "lucide-react";
+import { ArrowLeft, Search, Filter, SortAsc, SortDesc, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { getNameData } from "@/services/api";
 import { searchStockSuggestions, StockSuggestion } from "@/constants/stockSuggestions";
+import { getSymbolData } from "@/services/api";
+import { getCompanyDetails } from "@/services/api";
 
 interface SearchResultsPageProps {
   searchQuery: string;
@@ -26,6 +28,11 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
   const [currentSearchQuery, setCurrentSearchQuery] = useState(searchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<StockSuggestion[]>([]);
+  const [companyDetailsCache, setCompanyDetailsCache] = useState<Record<string, any>>({});
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   // Fetch search results when currentSearchQuery changes
   useEffect(() => {
@@ -38,8 +45,33 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
       try {
         const data = await getNameData(currentSearchQuery.trim().toUpperCase());
         console.log("Search data received:", data);
-        // Giả định API trả về một mảng hoặc chuyển đổi response thành mảng
-        setSearchResults(Array.isArray(data) ? data : [data]);
+
+        // Ensure we have an array of results
+        const results = Array.isArray(data) ? data : [data];
+        setSearchResults(results);
+
+        // Fetch additional company details for each result
+        const detailsPromises = results.map(async (result: any) => {
+          if (result.id && !companyDetailsCache[result.id]) {
+            try {
+              const details = await getCompanyDetails(result.id);
+              return { id: result.id, details };
+            } catch (err) {
+              console.log(`Failed to fetch details for ${result.id}:`, err);
+              return { id: result.id, details: null };
+            }
+          }
+          return null;
+        });
+
+        const detailsResults = await Promise.all(detailsPromises);
+        const newCache = { ...companyDetailsCache };
+        detailsResults.forEach(item => {
+          if (item && item.details) {
+            newCache[item.id] = item.details;
+          }
+        });
+        setCompanyDetailsCache(newCache);
       } catch (err) {
         console.error("Search error:", err);
         setError("Không tìm thấy kết quả cho từ khóa này");
@@ -57,8 +89,39 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
     if (searchQuery && searchQuery !== currentSearchQuery) {
       setCurrentSearchQuery(searchQuery);
       setLocalSearchQuery(searchQuery);
+      setCurrentPage(1); // Reset to first page when new search
     }
   }, [searchQuery, currentSearchQuery]);
+
+  // Reset to first page when search results change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchResults]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(searchResults.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentResults = searchResults.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of results
+    document.querySelector('.results-grid')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
+  };
 
   // Sort filtered stocks
 
@@ -278,6 +341,11 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                 <Search className="w-4 h-4 mr-2" />
                 {searchResults.length} kết quả
               </Badge>
+              {searchResults.length > 0 && (
+                <div className="text-slate-400 text-sm">
+                  Hiển thị {startIndex + 1}-{Math.min(endIndex, searchResults.length)} của {searchResults.length}
+                </div>
+              )}
               {currentSearchQuery && (
                 <div className="text-slate-400">
                   Tìm kiếm cho: <span className="text-white font-medium">"{currentSearchQuery}"</span>
@@ -350,15 +418,16 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
               </div>
             </div>
           ) : searchResults.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {searchResults.map((result, index) => (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 results-grid">
+                {currentResults.map((result, index) => (
                 <div
-                  key={index}
+                  key={startIndex + index}
                   className="p-6 bg-slate-800/60 rounded-xl border border-slate-600/40 hover:border-slate-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-slate-800/80 relative overflow-hidden group"
                   onClick={() => {
                     console.log("Clicked result:", result);
-                    // Fallback về search query nếu không tìm thấy field nào
-                    const stockCode = result.code || result.symbol || result.name || result.ticker || searchQuery.trim().toUpperCase();
+                    // Use the 'name' field which is the stock code
+                    const stockCode = result.name || result.code || result.symbol || result.ticker || searchQuery.trim().toUpperCase();
                     console.log("Using stockCode:", stockCode);
                     onDetailedAnalysis(stockCode);
                   }}
@@ -368,10 +437,15 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-1">
-                          {result.code || result.symbol || result.name || result.ticker || searchQuery.trim().toUpperCase()}
+                          {result.name || result.code || result.symbol || result.ticker || searchQuery.trim().toUpperCase()}
                         </h3>
                         <p className="text-slate-400 text-sm">
-                          {result.companyName || result.fullName || result.description || 'Tên công ty'}
+                          {companyDetailsCache[result.id]?.company?.company_name ||
+                           result.company_name ||
+                           result.companyName ||
+                           result.fullName ||
+                           result.description ||
+                           'Đang tải tên công ty...'}
                         </p>
                       </div>
                       <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30">
@@ -381,18 +455,25 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Giá hiện tại:</span>
+                        <span className="text-slate-400">Sàn giao dịch:</span>
                         <span className="text-white font-medium">
-                          {result.price || 'N/A'}
+                          {result.exchange || 'HOSE'}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Thay đổi:</span>
-                        <span className={`font-medium ${(result.change || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'
-                          }`}>
-                          {result.change ? `${result.change > 0 ? '+' : ''}${result.change}%` : 'N/A'}
+                        <span className="text-slate-400">Ngày cập nhật:</span>
+                        <span className="text-slate-400 text-xs">
+                          {result.updated_at ? new Date(result.updated_at).toLocaleDateString('vi-VN') : 'N/A'}
                         </span>
                       </div>
+                      {companyDetailsCache[result.id]?.company?.industry && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-400">Ngành:</span>
+                          <span className="text-cyan-400 text-xs">
+                            {companyDetailsCache[result.id].company.industry}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <Button
@@ -401,8 +482,8 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("Button clicked - result:", result);
-                        // Fallback về search query nếu không tìm thấy field nào
-                        const stockCode = result.code || result.symbol || result.name || result.ticker || searchQuery.trim().toUpperCase();
+                        // Use the 'name' field which is the stock code
+                        const stockCode = result.name || result.code || result.symbol || result.ticker || searchQuery.trim().toUpperCase();
                         console.log("Button using stockCode:", stockCode);
                         onDetailedAnalysis(stockCode);
                       }}
@@ -412,6 +493,82 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                   </div>
                 </div>
               ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8 pb-8">
+                  {/* Previous Button */}
+                  <Button
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/80 hover:border-slate-500/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline">Trước</span>
+                  </Button>
+
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      // Show first page, last page, current page and adjacent pages
+                      const showPage =
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1;
+
+                      if (!showPage) {
+                        // Show ellipsis
+                        if (page === currentPage - 2 && currentPage > 3) {
+                          return (
+                            <span key={page} className="px-2 text-slate-500">
+                              ...
+                            </span>
+                          );
+                        }
+                        if (page === currentPage + 2 && currentPage < totalPages - 2) {
+                          return (
+                            <span key={page} className="px-2 text-slate-500">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+
+                      return (
+                        <Button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          className={`w-10 h-10 p-0 ${
+                            currentPage === page
+                              ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-lg"
+                              : "bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/80 hover:border-slate-500/60"
+                          }`}
+                        >
+                          {page}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Next Button */}
+                  <Button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/80 hover:border-slate-500/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="hidden sm:inline">Tiếp</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-16">

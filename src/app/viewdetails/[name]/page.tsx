@@ -28,7 +28,7 @@ export default function DetailedAnalysisPage() {
     const load = async () => {
       if (!symbolMap || Object.keys(symbolMap).length === 0) {
         // F5 trực tiếp → map rỗng → fetch lại
-        const list = await getSymbolData();
+        const list = await getSymbolData("");
         setSymbolMap(list);
         const found = list.find((s: any) => s.name === name);
         if (found) setId(found.id);
