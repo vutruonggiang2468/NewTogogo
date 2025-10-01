@@ -309,14 +309,14 @@ export function Header() {
       label: "Tổng quan",
       icon: <BarChart3 className="w-4 h-4" />,
     },
-    {
-      label: "Kỹ thuật",
-      icon: <TrendingUp className="w-4 h-4" />,
-    },
-    {
-      label: "Tin tức",
-      icon: <Newspaper className="w-4 h-4" />,
-    },
+    // {
+    //   label: "Kỹ thuật",
+    //   icon: <TrendingUp className="w-4 h-4" />,
+    // },
+    // {
+    //   label: "Tin tức",
+    //   icon: <Newspaper className="w-4 h-4" />,
+    // },
   ];
 
   const breakingNews = [

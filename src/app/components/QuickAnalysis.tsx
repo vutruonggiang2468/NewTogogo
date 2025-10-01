@@ -19,8 +19,10 @@ import {
   ArrowDownRight,
   Minus,
 } from "lucide-react";
-import { getSymbolData } from "@/services/api";
+import { getSymbolData, getCompanyDetails } from "@/services/api";
 import { useSymbolStore } from "@/store/symbol.store";
+import { getStockAnalysis } from "@/components/helpers/detailedAnalysisHelpers";
+import dayjs from "dayjs";
 
 const getTrendIcon = (trend: string) => {
   return trend === "up" ? (
@@ -61,12 +63,14 @@ const getRecommendationIcon = (rec: string) => {
 };
 
 export function QuickAnalysis() {
-  const [selectedStock, setSelectedStock] = useState("symbolId");
+  const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<SymbolByNameData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [detailedInfo, setDetailedInfo] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
 
   type SymbolByNameData = {
     name: string;
@@ -77,9 +81,14 @@ export function QuickAnalysis() {
   useEffect(() => {
     const fetchSymbols = async () => {
       try {
-        const data = await getSymbolData();
-        setData(data);
-        useSymbolStore.getState().setSymbolMap(data);
+        const symbolData = await getSymbolData("");
+        setData(symbolData);
+        useSymbolStore.getState().setSymbolMap(symbolData);
+
+        // Auto-select first stock
+        if (symbolData && symbolData.length > 0 && !selectedStock) {
+          setSelectedStock(symbolData[0].name);
+        }
       } catch (err) {
         setError("Không lấy được dữ liệu symbol");
         console.error(err);
@@ -89,13 +98,37 @@ export function QuickAnalysis() {
     };
     setLoading(true);
     fetchSymbols();
-    // No return value here (void)
-  }, [selectedStock]);
+  }, []);
+
+  // Fetch detailed info when selected stock changes
+  useEffect(() => {
+    const fetchDetails = async () => {
+      if (!selectedStock || !data) return;
+
+      const selectedData = data.find((stock) => stock.name === selectedStock);
+      if (!selectedData) return;
+
+      setLoadingDetails(true);
+      try {
+        const details = await getCompanyDetails(selectedData.id);
+        setDetailedInfo(details);
+      } catch (err) {
+        console.error("Error fetching company details:", err);
+        setDetailedInfo(null);
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+
+    fetchDetails();
+  }, [selectedStock, data]);
 
   const selectedData = data?.find((stock) => stock.name === selectedStock);
+  const stockAnalysis = selectedStock ? getStockAnalysis(selectedStock) : null;
 
-
-  console.log("Data  fixid:", selectedData);
+  console.log("Selected Data:", selectedData);
+  console.log("Stock Analysis:", stockAnalysis);
+  console.log("Detailed Info:", detailedInfo);
 
   return (
     <div className="space-y-6">
@@ -104,11 +137,10 @@ export function QuickAnalysis() {
         {data?.map((data) => (
           <Card
             key={data.name}
-            className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-              selectedStock === data.name
-                ? "ring-2 ring-blue-400 bg-blue-500/20 border-blue-400/50"
-                : "hover:bg-gray-800/60 bg-gray-800/40 border-gray-600/30 hover:border-gray-500/50"
-            }`}
+            className={`cursor-pointer transition-all hover:shadow-lg border-2 ${selectedStock === data.name
+              ? "ring-2 ring-blue-400 bg-blue-500/20 border-blue-400/50"
+              : "hover:bg-gray-800/60 bg-gray-800/40 border-gray-600/30 hover:border-gray-500/50"
+              }`}
             onClick={() => setSelectedStock(data.name)}
           >
             <CardContent className="p-3 text-center">
@@ -117,9 +149,8 @@ export function QuickAnalysis() {
               </div>
               <div className="text-sm text-gray-300 mb-1">{data.name}</div>
               <div
-                className={`text-sm flex items-center justify-center gap-1 ${
-                  data.id === "up" ? "text-emerald-400" : "text-red-400"
-                }`}
+                className={`text-sm flex items-center justify-center gap-1 ${data.id === "up" ? "text-emerald-400" : "text-red-400"
+                  }`}
               >
                 {getTrendIcon(data.id)}
                 <span>{data.id}</span>
@@ -134,10 +165,10 @@ export function QuickAnalysis() {
                     {data.name === "STRONG_BUY"
                       ? "MUA MẠNH"
                       : data.name === "BUY"
-                      ? "MUA"
-                      : data.name === "HOLD"
-                      ? "GIỮ"
-                      : "BÁN"}
+                        ? "MUA"
+                        : data.name === "HOLD"
+                          ? "GIỮ"
+                          : "BÁN"}
                   </span>
                 </Badge>
               </div>
@@ -220,9 +251,61 @@ export function QuickAnalysis() {
                         </h4>
                         <div className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-400/20">
                           <h5 className="text-base font-medium text-slate-400 mb-3">
-                            {selectedData?.name}
-                            {selectedData?.exchange}
+                            {selectedData?.name} - {selectedData?.exchange}
                           </h5>
+                          {loadingDetails ? (
+                            <div className="text-center py-4">
+                              <div className="text-slate-400">Đang tải thông tin phân tích...</div>
+                            </div>
+                          ) : stockAnalysis ? (
+                            <div className="space-y-3">
+                              {/* <div className="grid grid-cols-2 gap-4">
+                                <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                                  <div className="text-sm text-slate-400">Giá hiện tại</div>
+                                  <div className="font-bold text-white text-lg">{stockAnalysis.currentPrice}</div>
+                                </div>
+                                <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                                  <div className="text-sm text-slate-400">Biến động</div>
+                                  <div className={`font-bold text-lg ${
+                                    stockAnalysis.change?.startsWith("+") ? "text-emerald-400" : "text-red-400"
+                                  }`}>
+                                    {stockAnalysis.change}
+                                  </div>
+                                </div>
+                                <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                                  <div className="text-sm text-slate-400">P/E</div>
+                                  <div className="font-bold text-blue-400">{stockAnalysis.pe}</div>
+                                </div>
+                                <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                                  <div className="text-sm text-slate-400">ROE</div>
+                                  <div className="font-bold text-emerald-400">{stockAnalysis.roe}</div>
+                                </div>
+                              </div> */}
+
+                              <div className="pt-3 border-t border-slate-600/50">
+                                {/* <div className="text-slate-300">
+                                  <span className="text-slate-400">Khuyến nghị: </span>
+                                  <span className={`font-medium ${
+                                    stockAnalysis.recommendation === "STRONG_BUY" ? "text-emerald-400" :
+                                    stockAnalysis.recommendation === "BUY" ? "text-blue-400" :
+                                    stockAnalysis.recommendation === "SELL" ? "text-red-400" : "text-yellow-400"
+                                  }`}>
+                                    {stockAnalysis.recommendation === "STRONG_BUY" ? "MUA MẠNH" :
+                                     stockAnalysis.recommendation === "BUY" ? "MUA" :
+                                     stockAnalysis.recommendation === "SELL" ? "BÁN" : "GIỮ"}
+                                  </span>
+                                </div> */}
+                                {/* <div className="text-slate-300 mt-2">
+                                  <span className="text-slate-400">Ngành: </span>
+                                  <span className="font-medium text-cyan-400">{stockAnalysis.sector}</span>
+                                </div> */}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-4 text-slate-400">
+                              Không có dữ liệu phân tích
+                            </div>
+                          )}
                         </div>
                         {/* <div className="bg-gray-800/40 rounded-lg border border-gray-600/30 p-4">
                           <div className="space-y-2 text-base leading-relaxed">
@@ -359,6 +442,71 @@ export function QuickAnalysis() {
                         <Target className="w-6 h-6 text-teal-400" />
                         Phân tích kỹ thuật
                       </h4>
+
+                      {loadingDetails ? (
+                        <div className="text-center py-8">
+                          <div className="text-slate-400">Đang tải dữ liệu kỹ thuật...</div>
+                        </div>
+                      ) : stockAnalysis ? (
+                        <div className="space-y-4">
+                          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg border border-blue-400/30">
+                              <div className="text-sm text-slate-400">RSI (14)</div>
+                              <div className={`text-lg font-bold ${
+                                stockAnalysis.technical.rsi > 70 ? "text-red-400" :
+                                stockAnalysis.technical.rsi < 30 ? "text-emerald-400" : "text-yellow-400"
+                              }`}>
+                                {stockAnalysis.technical.rsi}
+                              </div>
+                              <div className="text-xs text-slate-400">
+                                {stockAnalysis.technical.rsi > 70 ? "Quá mua" :
+                                 stockAnalysis.technical.rsi < 30 ? "Quá bán" : "Trung tính"}
+                              </div>
+                            </div>
+
+                            <div className="p-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-lg border border-emerald-400/30">
+                              <div className="text-sm text-slate-400">MACD</div>
+                              <div className={`text-lg font-bold ${
+                                stockAnalysis.technical.macd.includes("Bullish") ? "text-emerald-400" :
+                                stockAnalysis.technical.macd.includes("Bearish") ? "text-red-400" : "text-yellow-400"
+                              }`}>
+                                {stockAnalysis.technical.macd}
+                              </div>
+                            </div>
+
+                            <div className="p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-400/30">
+                              <div className="text-sm text-slate-400">Vùng hỗ trợ</div>
+                              <div className="text-lg font-bold text-emerald-400">
+                                {stockAnalysis.technical.support}
+                              </div>
+                            </div>
+
+                            <div className="p-4 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-lg border border-red-400/30">
+                              <div className="text-sm text-slate-400">Vùng kháng cự</div>
+                              <div className="text-lg font-bold text-red-400">
+                                {stockAnalysis.technical.resistance}
+                              </div>
+                            </div>
+                          </div> */}
+
+                          <div className="p-4 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-lg border border-blue-400/20">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="text-sm text-slate-400">Khối lượng giao dịch</div>
+                                <div className="text-lg font-bold text-white">{stockAnalysis.volume}</div>
+                              </div>
+                              <div>
+                                <div className="text-sm text-slate-400">Giá trị giao dịch</div>
+                                <div className="text-lg font-bold text-white">{stockAnalysis.volume}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-slate-400">
+                          Không có dữ liệu kỹ thuật
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Technical Indicators */}
@@ -513,6 +661,69 @@ export function QuickAnalysis() {
                   </Card>
                 </TabsContent>
 
+                <TabsContent value="news">
+                  <Card className="bg-gradient-to-br from-slate-800/40 to-slate-700/40 border border-blue-400/20">
+                    <CardContent className="p-4">
+                      <h4 className="text-lg font-medium text-slate-300 mb-4 flex items-center gap-2">
+                        <Eye className="w-6 h-6 text-sky-400" />
+                        Tin tức liên quan {selectedStock}
+                      </h4>
+
+                      {loadingDetails ? (
+                        <div className="text-center py-8">
+                          <div className="text-slate-400">Đang tải tin tức...</div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="p-3 border border-blue-400/20 bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-lg hover:bg-gradient-to-r hover:from-slate-700/60 hover:to-slate-600/60 cursor-pointer transition-all">
+                            <h5 className="text-base font-medium mb-2 text-white">
+                              {selectedStock} công bố kết quả kinh doanh quý 4 vượt kỳ vọng
+                            </h5>
+                            <div className="flex items-center justify-between text-sm text-slate-400">
+                              <span>2 giờ trước</span>
+                              <Badge
+                                variant="outline"
+                                className="text-emerald-300 border-emerald-400/50 bg-emerald-500/20"
+                              >
+                                Tích cực
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="p-3 border border-blue-400/20 bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-lg hover:bg-gradient-to-r hover:from-slate-700/60 hover:to-slate-600/60 cursor-pointer transition-all">
+                            <h5 className="text-base font-medium mb-2 text-white">
+                              Khuyến nghị mua mạnh {selectedStock} từ CTCK ABC
+                            </h5>
+                            <div className="flex items-center justify-between text-sm text-slate-400">
+                              <span>4 giờ trước</span>
+                              <Badge
+                                variant="outline"
+                                className="text-blue-300 border-blue-400/50 bg-blue-500/20"
+                              >
+                                Phân tích
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="p-3 border border-blue-400/20 bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-lg hover:bg-gradient-to-r hover:from-slate-700/60 hover:to-slate-600/60 cursor-pointer transition-all">
+                            <h5 className="text-base font-medium mb-2 text-white">
+                              {stockAnalysis?.sector === "Banking" ? "Ngân hàng" : stockAnalysis?.sector} - Triển vọng tích cực trong quý tới
+                            </h5>
+                            <div className="flex items-center justify-between text-sm text-slate-400">
+                              <span>1 ngày trước</span>
+                              <Badge
+                                variant="outline"
+                                className="text-purple-300 border-purple-400/50 bg-purple-500/20"
+                              >
+                                Ngành
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
                 {/* <TabsContent value="news">
                   <Card className="bg-gradient-to-br from-slate-800/40 to-slate-700/40 border border-blue-400/20">
                     <CardContent className="p-4">
@@ -599,27 +810,25 @@ export function QuickAnalysis() {
                       </Badge>
                     </div> */}
 
-                    <div className="space-y-3">
+                    {/* <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-base text-slate-400">
                           Cập nhật:
                         </span>
                         <div className="text-right">
                           <div
-                            className={`font-medium text-lg ${
-                              selectedData?.name === "up"
+                            className={`font-medium text-lg ${selectedData?.name === "up"
                                 ? "text-emerald-400"
                                 : "text-red-400"
-                            }`}
+                              }`}
                           >
                             {selectedData?.updated_at}
                           </div>
                           <div
-                            className={`text-sm flex items-center gap-1 ${
-                              selectedData?.exchange === "up"
+                            className={`text-sm flex items-center gap-1 ${selectedData?.exchange === "up"
                                 ? "text-emerald-400"
                                 : "text-red-400"
-                            }`}
+                              }`}
                           >
                             {selectedData?.exchange === "up"
                               ? getTrendIcon("up")
@@ -632,6 +841,38 @@ export function QuickAnalysis() {
                         <Link href={`/viewdetails/${selectedData?.name}`}>
                           <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0">
                             <Eye className="w-6 h-6 mr-2" />
+                            <span className="text-sm">Xem chi tiết</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    </div> */}
+                    <div className="space-y-3 p-4 rounded-xl border border-slate-700/40 bg-slate-800/40 shadow-sm">
+                      {/* Header */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h2 className="text-lg font-semibold text-slate-100">
+                            {selectedData?.name || "Mã CK"}
+                          </h2>
+                          <span className="inline-block mt-1 px-2 py-0.5 text-xs rounded-md bg-blue-600/20 text-blue-400 border border-blue-500/30">
+                            {selectedData?.exchange || "Sàn"}
+                          </span>
+                        </div>
+
+                        {/* Updated time */}
+                        <div className="text-right">
+                          <div className="font-medium text-sm text-slate-400">
+                            {selectedData?.updated_at
+                              ? dayjs(selectedData.updated_at).format("DD/MM/YYYY HH:mm")
+                              : "Chưa có dữ liệu"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Button */}
+                      <div className="pt-3 border-t border-blue-400/20">
+                        <Link href={`/viewdetails/${selectedData?.name}`}>
+                          <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0">
+                            <Eye className="w-5 h-5 mr-2" />
                             <span className="text-sm">Xem chi tiết</span>
                           </Button>
                         </Link>

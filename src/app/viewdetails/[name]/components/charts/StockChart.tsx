@@ -165,7 +165,7 @@ export function StockChart({
               size="sm"
               className="border-blue-400/30 text-blue-400 hover:bg-blue-400/10"
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-4 h-4" /> 
             </Button>
           </div>
         </div>
