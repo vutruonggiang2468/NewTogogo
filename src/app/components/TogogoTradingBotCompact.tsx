@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useSymbolStore } from "@/store/symbol.store";
 import Link from "next/link";
 import {
   Zap,
@@ -101,6 +102,14 @@ const stockOptions = [
 export function TogogoTradingBotCompact() {
   const [selectedBot, setSelectedBot] = useState(0);
   const [selectedStock, setSelectedStock] = useState("YTC");
+  const { symbolMap } = useSymbolStore();
+
+  // Helper function to get ID from stock name
+  const getStockId = (stockCode: string) => {
+    if (!symbolMap) return stockCode;
+    const stockId = symbolMap[stockCode];
+    return stockId || stockCode;
+  };
 
   const currentBot = botSuggestions[selectedBot];
 
@@ -230,7 +239,7 @@ export function TogogoTradingBotCompact() {
                 <Link
                   key={index}
                   className="p-3 bg-gradient-to-r from-slate-700/40 to-slate-600/40 rounded-lg border border-blue-400/20 cursor-pointer hover:border-cyan-400/40 transition-all"
-                  href={`/viewdetails/YTC`}
+                  href={`/viewdetails/${getStockId('YTC')}`}
                 >
                   <div className="text-center">
                     <div className="font-semibold text-cyan-400">{pick}</div>
@@ -287,7 +296,7 @@ export function TogogoTradingBotCompact() {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Link href={`/viewdetails/${selectedStock}`}>
+            <Link href={`/viewdetails/${getStockId(selectedStock)}`}>
               <Button className="w-full bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 text-white shadow-lg">
                 <Target className="w-4 h-4 mr-2" />
                 Xem gợi ý bot cho {selectedStock}

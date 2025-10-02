@@ -22,61 +22,38 @@ interface Stock {
 }
 
 export default function DetailedAnalysisPage() {
-  const { name } = useParams<{ name: string }>();
+  const { id } = useParams<{ id: string }>();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchSuggestions, setShowSearchSuggestions] = useState<boolean>(false);
-  const [id, setId] = useState<string>("");
   const [detailedInfo, setDetailedInfo] = useState<CompanyDetails | null>(null);
 
   const { symbolMap, setSymbolMap } = useSymbolStore();
-  const stock = getStockAnalysis(id);
-  const isPositive = stock.change?.trim().startsWith("+") ?? false;
-
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CompanyDetails | null>(null);
+  const [stock, setStock] = useState<any>(null);
+  const isPositive = stock?.change?.trim().startsWith("+") ?? false;
   const [latestRatios, setLatestRatios] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [symbolList, setSymbolList] = useState<any[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      console.log("🔄 Loading symbol map - name:", name, "current id:", id);
+      console.log("🔄 Loading symbol map for ID-based page - id:", id);
 
       if (!symbolMap || Object.keys(symbolMap).length === 0) {
-        // F5 trực tiếp → map rỗng → fetch lại
         console.log("📋 Fetching symbol list...");
         const list = await getSymbolData("");
-        const symbol = await getSymbolData(name);
-
-        console.log("📋 Symbol received:-------", symbol);
-
         console.log("📋 Symbol list received:", list);
         setSymbolMap(list);
-        setSymbolList(list); // Lưu list để dùng cho search
-        const found = list.find((s: any) => s.name === name);
-        console.log("🔎 Found symbol:", found, "for name:", name);
-        if (found) {
-          console.log("➡️ Setting id from list:", found.id);
-          setId(found.id);
-        } else {
-          console.warn("❌ Symbol not found for name:", name);
-        }
+        setSymbolList(list);
       } else {
-        // map đã có → chỉ việc lấy
-        const foundId = symbolMap[name];
-        console.log("✓ Found id from map:", foundId, "for name:", name);
-        if (foundId) {
-          console.log("➡️ Setting id from map:", foundId);
-          setId(foundId);
-        } else {
-          console.warn("❌ Symbol not found in map for name:", name);
-        }
+        setSymbolList(Object.values(symbolMap));
       }
     };
     load();
-  }, [name]);
+  }, [id, symbolMap, setSymbolMap]);
 
   useEffect(() => {
-    console.log("🔍 useEffect triggered - id:", id, "name:", name);
+    console.log("🔍 useEffect triggered - id:", id);
 
     async function fetchCompanyDetails() {
       if (!id) {
@@ -90,9 +67,19 @@ export default function DetailedAnalysisPage() {
         const details = await getCompanyDetails(Number(id));
         console.log("📦 Received details:", details);
         setDetailedInfo(details);
-        setData(details); // Sử dụng cùng dữ liệu
+        setData(details);
 
-        // Lấy quý mới nhất từ ratiosData
+        // Set stock analysis based on symbol name
+        console.log("Selected Data:", details?.symbolData);
+        console.log("Symbol name:", details?.symbolData?.name);
+        if (details?.symbolData?.name) {
+          const stockAnalysis = getStockAnalysis(details.symbolData.name);
+          console.log("Stock Analysis:", stockAnalysis);
+          setStock(stockAnalysis);
+        } else {
+          console.log("⚠️ No symbol name found in details.symbolData");
+        }
+
         if (details?.ratiosData) {
           console.log("Raw ratiosData:", details.ratiosData);
           const latest = getLatestQuarter(details.ratiosData);
@@ -117,34 +104,30 @@ export default function DetailedAnalysisPage() {
     )
     .slice(0, 5);
 
-  const handleStockSelect = (newStockCode: number) => {
+  const handleStockSelect = (stockId: number) => {
     setSearchQuery("");
     setShowSearchSuggestions(false);
-    window.location.href = `/viewdetails/${newStockCode}`;
+    window.location.href = `/viewdetails/${stockId}`;
   };
 
   function getLatestQuarter(data: any) {
-    // Kiểm tra xem data có phải là array không
     if (!data || !Array.isArray(data) || data.length === 0) {
       console.log("⚠️ getLatestQuarter: data không hợp lệ", data);
       return null;
     }
 
-    // tìm năm mới nhất
     const maxYear = Math.max(...data.map((d) => d.year));
-
-    // lọc ra dữ liệu của năm mới nhất
     const sameYear = data.filter((d) => d.year === maxYear);
-
-    // trong năm đó, lấy quý lớn nhất
     const latest = sameYear.reduce((prev, curr) =>
       curr.quarter > prev.quarter ? curr : prev
     );
 
     return latest;
   }
+
+  console.log("Data for ID:", id, data);
+
   return (
-    console.log("Raaaaaaaaaaaaa", data),
     <TooltipProvider>
       <div className="min-h-screen mt-24">
         <div className="pt-16 md:pt-32">
@@ -155,7 +138,7 @@ export default function DetailedAnalysisPage() {
                 PHÂN TÍCH CHUYÊN SÂU
               </h1>
               <p className="text-slate-400">
-                Phân tích chi tiết cho cổ phiếu {name}
+                Phân tích chi tiết cho cổ phiếu {data?.symbolData?.name}
               </p>
             </div>
 
@@ -164,7 +147,7 @@ export default function DetailedAnalysisPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold">{name}</span>
+                      <span className="text-white font-bold">{data?.symbolData?.name}</span>
                     </div>
                     <div>
                       <h1 className="text-xl font-bold text-white">
@@ -176,17 +159,6 @@ export default function DetailedAnalysisPage() {
                       </p>
                     </div>
                   </div>
-                  {/* <div className="text-right">
-                    <div className="text-xl font-bold text-white">
-                      {stock.currentPrice}
-                    </div>
-                    <div
-                      className={`text-sm font-semibold ${isPositive ? "text-emerald-400" : "text-red-400"
-                        }`}
-                    >
-                      {stock.change} ({stock.changePercent})
-                    </div>
-                  </div> */}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-600/50">
                   <div className="text-center p-2 bg-slate-700/30 rounded-lg">
@@ -197,11 +169,10 @@ export default function DetailedAnalysisPage() {
                     <div className="text-sm text-slate-400">ROE</div>
                     <div className="font-bold text-emerald-400">
                       {latestRatios?.roe_percent}
-                      {/* {(latestRatios?.roe_percent ?? 0).toFixed(2)}% */}
                     </div>
                   </div>
                   <div className="text-center p-2 bg-slate-700/30 rounded-lg">
-                    <div className="text-sm text-slate-400">Thanh khoản</div>
+                    <div className="text-sm text-slate-400">Thanh khoản</div>
                     <div className="font-bold text-white">
                       {latestRatios?.current_ratio}
                     </div>
@@ -217,6 +188,18 @@ export default function DetailedAnalysisPage() {
             </Card>
 
             <div className="relative max-w-xl mx-auto mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="Tìm kiếm cổ phiếu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSearchSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+                  className="pl-10 bg-slate-800/60 border-blue-400/30 text-white placeholder-slate-400 focus:border-cyan-400 transition-colors"
+                />
+              </div>
               {showSearchSuggestions &&
                 searchQuery &&
                 filteredSuggestions.length > 0 && (
@@ -225,7 +208,7 @@ export default function DetailedAnalysisPage() {
                       return (
                         <button
                           key={stockItem.id}
-                          onClick={() => handleStockSelect(stockItem.name)}
+                          onClick={() => handleStockSelect(stockItem.id)}
                           className="w-full p-3 text-left hover:bg-blue-500/10 border-b border-slate-600/50 last:border-b-0 transition-all duration-200"
                           type="button"
                         >

@@ -14,7 +14,7 @@ const api = axios.create({
 export const getSymbolData = async (symbol: string) => {
   try {
     console.log("symbol", symbol);
-    const response = await api.get(`/stocks/symbols?limit=10`);
+    const response = await api.get(`/stocks/symbols?limit=8`);
 
     if (!response?.data || response.data.length === 0) {
       return { message: "Đang cập nhật dữ liệu…" };

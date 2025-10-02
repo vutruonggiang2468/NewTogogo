@@ -110,7 +110,7 @@ export function QuickAnalysis() {
 
       setLoadingDetails(true);
       try {
-        const details = await getCompanyDetails(selectedData.id);
+        const details = await getCompanyDetails(Number(selectedData.id));
         setDetailedInfo(details);
       } catch (err) {
         console.error("Error fetching company details:", err);
@@ -838,7 +838,7 @@ export function QuickAnalysis() {
                       </div>
 
                       <div className="pt-3 border-t border-blue-400/20">
-                        <Link href={`/viewdetails/${selectedData?.name}`}>
+                        <Link href={`/viewdetails/${selectedData?.id}`}>
                           <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0">
                             <Eye className="w-6 h-6 mr-2" />
                             <span className="text-sm">Xem chi tiết</span>
@@ -870,7 +870,7 @@ export function QuickAnalysis() {
 
                       {/* Button */}
                       <div className="pt-3 border-t border-blue-400/20">
-                        <Link href={`/viewdetails/${selectedData?.name}`}>
+                        <Link href={`/viewdetails/${selectedData?.id}`}>
                           <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white border-0">
                             <Eye className="w-5 h-5 mr-2" />
                             <span className="text-sm">Xem chi tiết</span>
