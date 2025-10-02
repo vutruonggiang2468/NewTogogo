@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useEffect } from "react";
-import { ChartColumnBig, Clock, Eye, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { ChartColumnBig, Clock, Database, Eye, Link, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeepAnalysisPage } from "./components/DeepAnalysisPage";
@@ -12,6 +12,8 @@ import { TogogoTradingBotCompact } from "./components/TogogoTradingBotCompact";
 import { NewsColumns } from "./components/NewsColumns";
 import { EconomicCalendar } from "./components/EconomicCalendar";
 import { NewsSidebar } from "./components/NewsSidebar";
+import { FacebookIcon, TwitterIcon, LinkedinIcon } from "lucide-react";
+import { getCompanyDetails } from "@/services/api";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<
@@ -51,7 +53,7 @@ export default function Home() {
       />
     );
   }
-  
+
 
   useEffect(() => {
     const updateClock = () => {
@@ -67,10 +69,11 @@ export default function Home() {
     const interval = setInterval(updateClock, 1000); // update mỗi giây
     return () => clearInterval(interval);
   }, []);
-  
+
   if (currentView === "deep-analysis") {
     return <DeepAnalysisPage onBack={handleBackToHome} />;
   }
+  
 
   return (
     <div className="min-h-screen">
@@ -134,20 +137,8 @@ export default function Home() {
           <div className="mb-4">
             <EconomicCalendar />
           </div>
-
           {/* Main Content Grid - 3:1 Layout */}
-          <div className="flex items-center gap-2 mb-6 mt-12">
-            <div className="w-1.5 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-white">
-              TIN TỨC THEO CHUYÊN MỤC
-            </h2>
-            <Badge
-              variant="outline"
-              className="ml-3 text-cyan-400 border-cyan-400/50 bg-cyan-400/10 px-3 py-1"
-            >
-              Đa dạng
-            </Badge>
-          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Main Content Area - 3 columns */}
             <div className="lg:col-span-3 space-y-4">
@@ -164,7 +155,7 @@ export default function Home() {
                 <CardContent className="p-4 relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
-                    <h3 className="font-bold text-white">Tin tức mới nhất</h3>
+                    <h3 className="font-bold text-white">Tin tức thị trường mới nhất</h3>
                     <Badge className="bg-blue-500/20 border-blue-500/50 text-blue-300 px-2 py-1 text-xs">
                       <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse mr-1"></div>
                       Live
@@ -352,6 +343,7 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
+
             </div>
 
             {/* Sidebar - NewsSidebar - 1 column */}
@@ -361,6 +353,72 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <Card>
+        <footer className="bg-slate-900 text-gray-200  ">
+          <div className="max-w-7xl mx-auto px-4 py-5 my-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-2">
+                TOGOGO ANALYTICS
+              </h2>
+              <p className="text-sm leading-relaxed">
+                Togogo Analytics giúp bạn nắm bắt cổ phiếu tiềm năng, phân tích nhanh – ra quyết định kịp thời.
+              </p>
+              <div className="flex space-x-4 mt-3 text-lg">
+                <a href="#"><FacebookIcon className="w-5 h-5 text-cyan-400" /></a>
+                <a href="#"><TwitterIcon className="w-5 h-5 text-cyan-400" /></a>
+                <a href="#"><LinkedinIcon className="w-5 h-5 text-cyan-400" /></a>
+              </div>
+            </div>
+            <div>
+              <h3 className="flex items-center gap-2 mb-4 text-white">
+                <Link className="w-5 h-5 text-cyan-400" />
+                <span>Liên kết nhanh</span>
+              </h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/" className="hover:text-cyan-400">Trang chủ</a></li>
+                <li><a href="/" className="hover:text-cyan-400">Tin tức</a></li>
+                <li><a href="/" className="hover:text-cyan-400">Tìm kiếm mã</a></li>
+
+              </ul>
+            </div>
+            <div>
+              <h3 className="flex items-center gap-2 mb-4 text-white">
+                <Database className="w-5 h-5 text-cyan-400" />
+                <span>Dữ liệu thị trường</span>
+              </h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-cyan-400">DesignBot</a></li>
+                <li><a href="#" className="hover:text-cyan-400">TogoAuto</a></li>
+                <li><a href="#" className="hover:text-cyan-400">System Rental</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3 text-white">Liên hệ</h4>
+              <ul className="space-y-2 text-sm">
+                <li>📞 (+84) 853.336.668</li>
+                <li>📧 hungle@hagency.vn</li>
+                <li>📍 CT1AB khu đô thị VOV, Nam Từ Liêm, Hà Nội</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-700 text-xs text-gray-400 px-4 py-4 max-w-7xl mx-auto leading-relaxed">
+            <p>
+              Togogo Analytics không đưa ra bất kỳ cam kết, đảm bảo nào – dù rõ ràng hay ngụ ý – về tính chính xác, đầy đủ hoặc tính phù hợp của thông tin cho một mục đích cụ thể. Mọi dữ liệu, hình ảnh, biểu tượng hiển thị trên trang chỉ mang tính tham khảo.
+              Việc sử dụng thông tin và công cụ từ Togogo Analytics hoàn toàn do người dùng tự quyết định và tự chịu trách nhiệm. Chúng tôi không chịu trách nhiệm với bất kỳ rủi ro, tổn thất hoặc thiệt hại nào phát sinh từ việc sử dụng trang web hoặc phần mềm của Togogo Analytics.
+            </p>
+          </div>
+          <div className="mt-8">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2837.328032322972!2d105.78409189999999!3d20.9965474!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ad6c9a5d7957%3A0xba4cc9cfa7eaf58d!2sCT1A%20-%20CHUNG%20C%C6%AF%20VOV!5e1!3m2!1svi!2s!4v1759303537419!5m2!1svi!2s"
+              width="100%" height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              className="rounded-lg shadow-lg"
+            ></iframe>
+          </div>
+        </footer>
+      </Card>
     </div>
   );
 }

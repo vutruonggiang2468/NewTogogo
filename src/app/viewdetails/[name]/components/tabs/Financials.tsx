@@ -258,7 +258,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
                       </button>
                     ))
                   ) : (
-                    <span className="px-3 py-1.5 text-xs text-slate-500">Khong co quy</span>
+                    <span className="px-3 py-1.5 text-xs text-slate-500">Không có quý</span>
                   )}
                 </div>
               </div>
@@ -286,7 +286,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
             if (!balance) {
               return (
                 <div className="py-10 text-center text-slate-400">
-                  Khong co du lieu bang can doi cho ky da chon.
+                  Không có dữ liệu bảng cân đối cho kỳ đã chọn.
                 </div>
               );
             }
@@ -351,9 +351,9 @@ return (
                       </div>
                       <TrendingUp className="w-6 h-6 text-emerald-400" />
                     </div>
-                    <div className="text-sm text-emerald-300 mb-1">Total Assets</div>
+                    <div className="text-sm text-emerald-300 mb-1">Tổng tài sản</div>
                     <div className="text-2xl font-bold text-white mb-2">{formatVND(data.total_assets)}</div>
-                    <div className="text-xs text-slate-400">Company&apos;s total resources</div>
+                    <div className="text-xs text-slate-400">Tổng tài sản của công ty</div>
                   </div>
 
                   <div className="p-6 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 rounded-xl border border-cyan-400/40">
@@ -363,7 +363,7 @@ return (
                       </div>
                       <TrendingUp className="w-6 h-6 text-cyan-400" />
                     </div>
-                    <div className="text-sm text-cyan-300 mb-1">Current Assets</div>
+                    <div className="text-sm text-cyan-300 mb-1">Tài sản ngắn hạn</div>
                     <div className="text-2xl font-bold text-white mb-2">{formatVND(data.current_assets)}</div>
                     <div className="text-xs text-slate-400">{calculatePercentage(data.current_assets, data.total_assets)}% of total</div>
                   </div>
@@ -375,7 +375,7 @@ return (
                       </div>
                       <TrendingDown className="w-6 h-6 text-red-400" />
                     </div>
-                    <div className="text-sm text-red-300 mb-1">Total Liabilities</div>
+                    <div className="text-sm text-red-300 mb-1">Tổng nợ phải trả</div>
                     <div className="text-2xl font-bold text-white mb-2">{formatVND(data.liabilities)}</div>
                     <div className="text-xs text-slate-400">{calculatePercentage(data.liabilities, data.total_assets)}% of assets</div>
                   </div>

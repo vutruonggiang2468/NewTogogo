@@ -65,10 +65,13 @@ export default function OverviewTab({
       timeZone: "Asia/Ho_Chi_Minh",
     });
   }
+  const newsData = data?.company?.news || [];
+  const sortedNews = [...newsData].sort((a, b) => b.public_date - a.public_date);
 
-console.log("newwwss data:", data?.symbolData)
+
+  console.log("sàn:", data?.symbolData?.company);
   return (
-    
+
     <div className="space-y-6 mt-0">
       {/* Stock Chart - Full Width */}
       <StockChart
@@ -91,14 +94,14 @@ console.log("newwwss data:", data?.symbolData)
               <div className="p-3 bg-slate-700/30 rounded-lg">
                 <div className="text-xs text-slate-400">Tên đầy đủ</div>
                 <div className="text-white">
-                  {data?.symbolData?.company?.company_name}
+                  {data?.symbolData?.company?.company_name ?? "Undefined"}
                 </div>
               </div>
 
               <div className="p-3 bg-slate-700/30 rounded-lg">
                 <div className="text-xs text-slate-400">Hồ sơ doanh nghiệp</div>
                 <div className="text-white text-sm leading-relaxed">
-                  {data?.symbolData.company?.company_profile}
+                  {data?.symbolData?.company?.company_profile ?? "Undefined"}
                 </div>
               </div>
             </div>
@@ -113,27 +116,27 @@ console.log("newwwss data:", data?.symbolData)
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Thành lập</div>
                   <div className="text-white">
-                    {data?.symbolData.company?.history
-                      ? data.symbolData.company.history.match(/\d{4}/)?.[0] // lấy năm đầu tiên trong chuỗi
-                      : "-"}
+                    {data?.symbolData?.company?.history
+                      ? data.symbolData?.company.history.match(/\d{4}/)?.[0] // lấy năm đầu tiên trong chuỗi
+                      : "Undifined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Website</div>
                   <div className="text-cyan-400 text-xs">
-                    {data?.symbolData.company?.website}
+                    {data?.symbolData?.company?.website ?? "Undefined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Nhân viên</div>
                   <div className="text-white">
-                    {data?.symbolData.company?.no_employees}
+                    {data?.symbolData?.company?.no_employees ?? "Undefined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Sàn giao dịch</div>
                   <div className="text-cyan-400 text-xs">
-                    {data?.symbolData.company?.exchange}
+                    {data?.symbolData?.exchange ?? "Undefined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
@@ -141,24 +144,24 @@ console.log("newwwss data:", data?.symbolData)
                     Tổng số cổ phần phát hành
                   </div>
                   <div className="text-white">
-                    {data?.symbolData.company?.financial_ratio_issue_share
+                    {data?.symbolData?.company?.financial_ratio_issue_share
                       ? `${Number(
-                        data?.symbolData.company?.financial_ratio_issue_share
+                        data?.symbolData?.company?.financial_ratio_issue_share
                       ).toLocaleString("vi-VN")} cổ phiếu`
-                      : "-"}
+                      : "Undefined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Vốn điều lệ</div>
                   <div className="text-white">
-                    {data?.symbolData.company?.charter_capital
+                    {data?.symbolData?.company?.charter_capital
                       ? Number(
-                        data.symbolData.company.charter_capital
+                        data?.symbolData?.company?.charter_capital
                       ).toLocaleString("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       })
-                      : "-"}
+                      : "Undefined"}
                   </div>
                 </div>
               </div>
@@ -202,8 +205,8 @@ console.log("newwwss data:", data?.symbolData)
             Sự kiện doanh nghiệp
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            {data?.symbolData.company?.events?.length ? (
-              data.symbolData.company.events.map(
+            {data?.symbolData?.company?.events?.length ? (
+              data.symbolData?.company.events.map(
                 (events: any, index: number) => (
                   <div
                     key={index}
@@ -339,8 +342,8 @@ console.log("newwwss data:", data?.symbolData)
 
               return (
                 <div className="grid grid-cols-2 gap-5">
-                  {data?.symbolData.company?.news?.length ? (
-                    data.symbolData.company.news.map((news: any, index: number) => {
+                  {data?.symbolData?.company?.news?.length ? (
+                    data.symbolData?.company.news.map((news: any, index: number) => {
                       const style = newsTypeStyles[news.type as keyof typeof newsTypeStyles];
                       const priority = priorityIndicators[news.priority as keyof typeof priorityIndicators];
                       const IconComponent = style?.icon;
