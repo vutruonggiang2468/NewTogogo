@@ -8,6 +8,7 @@ import { getSymbolData } from "@/services/api";
 
 // Define the SymbolByNameData type
 type SymbolByNameData = {
+  id: string;
   code: string;
   name: string;
 };
@@ -53,7 +54,7 @@ export default function DeepAnalysisIndexPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.isArray(data) &&
               data.map((item: SymbolByNameData, index: number) => (
-                <Link key={item.code} href={`/viewdetails/${item.code}`}>
+                <Link key={item.code} href={`/viewdetails/${item.id}`}>
                   <Card className="bg-slate-800/60 border border-blue-400/30 hover:border-cyan-400/50 transition-colors">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div>

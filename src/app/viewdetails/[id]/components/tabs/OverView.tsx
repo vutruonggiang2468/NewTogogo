@@ -74,13 +74,15 @@ export default function OverviewTab({
 
     <div className="space-y-6 mt-0">
       {/* Stock Chart - Full Width */}
-      <StockChart
-        stockCode={stock.code}
-        currentPrice={stock.currentPrice}
-        change={stock.change}
-        changePercent={stock.changePercent}
-        isPositive={isPositive}
-      />
+      {stock && (
+        <StockChart
+          stockCode={stock.symbol}
+          currentPrice={stock.currentPrice}
+          change={stock.change}
+          changePercent={stock.changePercent}
+          isPositive={isPositive}
+        />
+      )}
 
       {/* Company Overview - Full Width */}
       <Card className="bg-slate-800/60 border border-blue-400/30">

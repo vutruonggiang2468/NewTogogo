@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { SearchResultsPage } from "../viewdetails/[name]/components/tabs/SearchResultsPage";
+import { SearchResultsPage } from "../viewdetails/[id]/components/tabs/SearchResultsPage";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -12,8 +12,8 @@ export default function SearchPage() {
     router.push("/");
   };
 
-  const handleDetailedAnalysis = (stockCode: string) => {
-    router.push(`/viewdetails/${stockCode}`);
+  const handleDetailedAnalysis = (stockId: string) => {
+    router.push(`/viewdetails/${stockId}`);
   };
 
   return (

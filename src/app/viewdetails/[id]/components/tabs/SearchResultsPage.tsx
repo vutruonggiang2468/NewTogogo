@@ -11,7 +11,7 @@ import { getCompanyDetails } from "@/services/api";
 interface SearchResultsPageProps {
   searchQuery: string;
   onBack: () => void;
-  onDetailedAnalysis: (stockCode: string) => void;
+  onDetailedAnalysis: (stockId: string) => void;
 }
 
 type SortOption = "name" | "code" | "price" | "change";
@@ -426,10 +426,10 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                   className="p-6 bg-slate-800/60 rounded-xl border border-slate-600/40 hover:border-slate-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-slate-800/80 relative overflow-hidden group"
                   onClick={() => {
                     console.log("Clicked result:", result);
-                    // Use the 'name' field which is the stock code
-                    const stockCode = result.name || result.code || result.symbol || result.ticker || searchQuery.trim().toUpperCase();
-                    console.log("Using stockCode:", stockCode);
-                    onDetailedAnalysis(stockCode);
+                    // Use the 'id' field which is the stock ID
+                    const stockId = result.id;
+                    console.log("Using stockId:", stockId);
+                    onDetailedAnalysis(stockId);
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-400/8 via-transparent to-blue-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -482,10 +482,10 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("Button clicked - result:", result);
-                        // Use the 'name' field which is the stock code
-                        const stockCode = result.name || result.code || result.symbol || result.ticker || searchQuery.trim().toUpperCase();
-                        console.log("Button using stockCode:", stockCode);
-                        onDetailedAnalysis(stockCode);
+                        // Use the 'id' field which is the stock ID
+                        const stockId = result.id;
+                        console.log("Button using stockId:", stockId);
+                        onDetailedAnalysis(stockId);
                       }}
                     >
                       Xem chi tiết
@@ -578,13 +578,21 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                 <p className="text-slate-400 mb-4">
                   Không có công ty nào phù hợp với từ khóa "{currentSearchQuery}"
                 </p>
-                <Button
-                  onClick={() => setLocalSearchQuery("")}
-                  variant="outline"
-                  className="text-blue-400 border-blue-400/30 hover:bg-blue-500/20"
-                >
-                  Xóa bộ lọc
-                </Button>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={() => setLocalSearchQuery("")}
+                    variant="outline"
+                    className="text-blue-400 border-blue-400/30 hover:bg-blue-500/20"
+                  >
+                    Xóa bộ lọc
+                  </Button>
+                  <Button
+                    onClick={() => window.location.href = '/viewdetails/'}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                  >
+                    Xem tất cả
+                  </Button>
+                </div>
               </div>
             </div>
           )}
