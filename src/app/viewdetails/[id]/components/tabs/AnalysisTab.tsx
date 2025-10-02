@@ -889,7 +889,6 @@ export default function CashFlow({ data, loading, error }: Props) {
     : null;
 
   return (
-    console.log("Ratios :", data),
     <div className="space-y-8">
       <Card className="bg-slate-800/60 border border-blue-400/30">
         <CardContent className="p-6">
