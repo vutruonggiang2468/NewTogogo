@@ -25,7 +25,7 @@ export const getCompanyDetails = async (symbolId: string) => {
     endpoints.map((ep) => api.get(ep.url))
   );
 
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
   results.forEach((res, i) => {
     if (res.status === "fulfilled") {
       data[endpoints[i].key] = res.value.data;

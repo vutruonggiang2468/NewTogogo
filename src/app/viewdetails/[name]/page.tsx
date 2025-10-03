@@ -11,7 +11,7 @@ import { getStockAnalysis } from "@/components/helpers/detailedAnalysisHelpers";
 import TabsDetail from "./components/Tabs";
 import Breadcrumb from "@/components/layouts/Breadcrumb";
 import { getCompanyDetails, getSymbolData } from "@/services/api";
-import { CompanyDetails } from "../types";
+import { CompanyDetails, SymbolData } from "../types";
 import { useSymbolStore } from "@/store/symbol.store";
 
 export default function DetailedAnalysisPage() {
@@ -21,6 +21,7 @@ export default function DetailedAnalysisPage() {
     useState<boolean>(false);
   const [id, setId] = useState<string>("1");
   const [detailedInfo, setDetailedInfo] = useState<CompanyDetails | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const { symbolMap, setSymbolMap } = useSymbolStore();
 
@@ -30,7 +31,7 @@ export default function DetailedAnalysisPage() {
         // F5 trực tiếp → map rỗng → fetch lại
         const list = await getSymbolData();
         setSymbolMap(list);
-        const found = list.find((s: any) => s.name === name);
+        const found = list.find((s: SymbolData) => s.name === name);
         if (found) setId(found.id);
       } else {
         // map đã có → chỉ việc lấy
@@ -70,8 +71,8 @@ export default function DetailedAnalysisPage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen mt-24">
-        <div className="pt-16 md:pt-32">
+      <div className="min-h-screen">
+        <div className="">
           <div className="container mx-auto px-4 py-6 max-w-7xl">
             <Breadcrumb />
 

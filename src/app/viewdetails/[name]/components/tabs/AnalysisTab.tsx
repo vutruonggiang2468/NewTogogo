@@ -936,6 +936,7 @@ export default function CashFlow({ data, loading, error }: Props) {
                             setSelectedYear(parseInt(e.target.value))
                           }
                           className="px-3 py-2 bg-slate-700/60 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-400/50 transition-all"
+                          title="Chọn năm"
                         >
                           <option value="2023">2023</option>
                           <option value="2024">2024</option>
@@ -1028,7 +1029,7 @@ export default function CashFlow({ data, loading, error }: Props) {
                         {ratios.equityToCharterCapital.toFixed(2)}x
                       </div>
                       <div className="text-xs text-slate-500">
-                        Owners' Equity/Charter Capital
+                        Owners&apos; Equity/Charter Capital
                       </div>
                     </div>
                   </div>

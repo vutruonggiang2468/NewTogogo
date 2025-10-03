@@ -62,15 +62,18 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Add top padding to account for fixed header (smaller on mobile) */}
-      <div className="pt-32 relative z-10">
-        <div className="container mx-auto px-4 py-4 max-w-7xl">
+      <div className="relative z-10">
+        <div className="container mx-auto px-4 py-4">
           {/* Quick Analysis Section - Enhanced */}
-          <Card className="mb-4 shadow-xl bg-gray-900/80 border border-gray-600/30 backdrop-blur-md relative overflow-hidden">
+          <Card
+            className="mb-4 shadow-xl bg-gray-900/80 border border-gray-600/30 backdrop-blur-md relative overflow-hidden"
+            id="quick-analysis"
+          >
             {/* Card decorative pattern */}
             <div className="absolute inset-0 pattern-gentle-dots opacity-70 pointer-events-none"></div>
             <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-400/15 via-blue-400/8 to-transparent rounded-full blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-emerald-400/10 to-transparent rounded-full blur-xl"></div>
-            <CardContent className="p-4 mt-18 relative z-10">
+            <CardContent className="p-4 relative z-0">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
@@ -94,7 +97,10 @@ export default function Home() {
           </Card>
 
           {/* Trading Bot Suggestions Section - Enhanced */}
-          <Card className="mb-4 shadow-xl bg-gray-900/80 border border-gray-600/30 backdrop-blur-md relative overflow-hidden">
+          <Card
+            className="mb-4 shadow-xl bg-gray-900/80 border border-gray-600/30 backdrop-blur-md relative overflow-hidden"
+            id="trading-bot"
+          >
             {/* Card decorative pattern */}
             <div className="absolute inset-0 pattern-waves opacity-80 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-emerald-400/18 via-emerald-400/10 to-transparent rounded-full blur-2xl"></div>
@@ -118,12 +124,12 @@ export default function Home() {
           </Card>
 
           {/* Economic Calendar Section - New */}
-          <div className="mb-4">
+          <div className="mb-4" id="economic-calendar">
             <EconomicCalendar />
           </div>
 
           {/* Main Content Grid - 3:1 Layout */}
-          <div className="flex items-center gap-2 mb-6 mt-12">
+          <div className="flex items-center gap-2 mb-6 mt-12" id="news">
             <div className="w-1.5 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full"></div>
             <h2 className="text-2xl font-bold text-white">
               TIN TỨC THEO CHUYÊN MỤC

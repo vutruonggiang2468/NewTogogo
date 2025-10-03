@@ -5,21 +5,16 @@ import Link from "next/link";
 import Breadcrumb from "@/components/layouts/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSymbolData } from "@/services/api";
-
-// Define the SymbolByNameData type
-type SymbolByNameData = {
-  code: string;
-  name: string;
-};
+import { SymbolData } from "./types";
 
 export default function DeepAnalysisIndexPage() {
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<SymbolByNameData[] | null>(null);
+  const [data, setData] = useState<SymbolData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     const fetchSymbols = async () => {
       try {
-        const data = await getSymbolData(""); // TODO: Replace "" with the appropriate symbol or logic to fetch all symbols if supported
+        const data = await getSymbolData(); // TODO: Replace "" with the appropriate symbol or logic to fetch all symbols if supported
         setData(data);
       } catch (err) {
         setError("Không lấy được dữ liệu symbol");
@@ -33,8 +28,8 @@ export default function DeepAnalysisIndexPage() {
     // No return value here (void)
   }, []);
   return (
-    <div className="min-h-screen mt-24">
-      <div className="pt-16 md:pt-28">
+    <div className="min-h-screen">
+      <div className="">
         <div className="container mx-auto px-4 py-6 max-w-7xl">
           {/* Breadcrumb for this page */}
           <Breadcrumb />
@@ -52,8 +47,8 @@ export default function DeepAnalysisIndexPage() {
           {/* Quick links (placeholder) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.isArray(data) &&
-              data.map((item: SymbolByNameData, index: number) => (
-                <Link key={item.code} href={`/viewdetails/${item.code}`}>
+              data.map((item: SymbolData) => (
+                <Link key={item.id} href={`/viewdetails/${item.name}`}>
                   <Card className="bg-slate-800/60 border border-blue-400/30 hover:border-cyan-400/50 transition-colors">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div>

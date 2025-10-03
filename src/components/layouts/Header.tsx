@@ -121,10 +121,10 @@ export function Header() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [activeSearchFilter, setActiveSearchFilter] = useState("Tổng quan");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  // const [lastScrollY, setLastScrollY] = useState(0);
   // const [user, setUser] = useState<UserProfile | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  // const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const { user, isLoggedIn, logout } = useAuthStore();
 
@@ -227,29 +227,29 @@ export function Header() {
   // }, []);
 
   // Handle scroll to show/hide header
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const currentScrollY = window.scrollY;
 
-      if (currentScrollY < 10) {
-        // Always show header when near top
-        setIsHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Hide header when scrolling down (after 100px)
-        setIsHeaderVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Show header when scrolling up
-        setIsHeaderVisible(true);
-      }
+  //     if (currentScrollY < 10) {
+  //       // Always show header when near top
+  //       setIsHeaderVisible(true);
+  //     } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+  //       // Hide header when scrolling down (after 100px)
+  //       setIsHeaderVisible(false);
+  //     } else if (currentScrollY < lastScrollY) {
+  //       // Show header when scrolling up
+  //       setIsHeaderVisible(true);
+  //     }
 
-      setLastScrollY(currentScrollY);
-    };
+  //     setLastScrollY(currentScrollY);
+  //   };
 
-    window.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  //   window.addEventListener("scroll", handleScroll, {
+  //     passive: true,
+  //   });
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, [lastScrollY]);
 
   const navigationItems = [
     {
@@ -355,9 +355,10 @@ export function Header() {
 
   return (
     <header
-      className={`bg-gray-900/95 border-b border-gray-600/30 fixed top-0 left-0 right-0 z-50 shadow-xl backdrop-blur-md transition-transform duration-300 ease-in-out ${
-        isHeaderVisible ? "translate-y-0" : "-translate-y-full"
-      }`}
+      className={`bg-gray-900/95 border-b border-gray-600/30 relative z-50 shadow-xl backdrop-blur-md transition-transform duration-300 ease-in-out `}
+      // ${
+      //   isHeaderVisible ? "translate-y-0" : "-translate-y-full"
+      // }
     >
       {/* Breaking News Ticker - Enhanced */}
       <div className="bg-blue-600 text-white py-2 relative overflow-hidden">

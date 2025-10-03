@@ -7,6 +7,9 @@ import {
   Clock,
   Copy,
   CreditCard,
+  Home,
+  Lock,
+  LogIn,
   QrCode,
   Settings,
 } from "lucide-react";
@@ -51,6 +54,7 @@ import BotManagementTab from "./components/tabs/BotManagementTab";
 import TransactionHistoryTab from "./components/tabs/TransactionHistoryTab";
 import WalletTab from "./components/tabs/WalletTab";
 import SettingsTab from "./components/tabs/SettingsTab";
+import Link from "next/link";
 
 const HEADER_HEIGHT = "8rem";
 const CONTENT_MIN_HEIGHT = `calc(100vh - ${HEADER_HEIGHT})`;
@@ -66,17 +70,6 @@ export default function UserProfilePage() {
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
   }>({});
-
-  const getInitialBirthDate = useCallback(() => {
-    if (!user?.dateOfBirth) {
-      return null;
-    }
-
-    const parsed = dayjs(user.dateOfBirth);
-    return parsed.isValid() ? parsed : null;
-  }, [user?.dateOfBirth]);
-
-  const minBirthDate = useMemo(() => dayjs("1900-01-01").startOf("day"), []);
 
   // New state for dialogs
   const [showBotSettingsDialog, setShowBotSettingsDialog] = useState(false);
@@ -104,6 +97,17 @@ export default function UserProfilePage() {
       minBalance: 500000,
     },
   });
+
+  const getInitialBirthDate = useCallback(() => {
+    if (!user?.dateOfBirth) {
+      return null;
+    }
+
+    const parsed = dayjs(user.dateOfBirth);
+    return parsed.isValid() ? parsed : null;
+  }, [user?.dateOfBirth]);
+
+  const minBirthDate = useMemo(() => dayjs("1900-01-01").startOf("day"), []);
 
   // Sample data for trading bots
   const [tradingBots] = useState<TradingBot[]>([
@@ -258,7 +262,42 @@ export default function UserProfilePage() {
   );
 
   if (!user || !editedUser) {
-    return null;
+    return (
+      <>
+        <div className="relative z-10 flex items-center justify-center min-h-[70vh] px-4">
+          <div className="w-full max-w-xl rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-slate-900/70 to-slate-800/60 shadow-2xl backdrop-blur-md p-8 text-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-cyan-300" />
+            </div>
+            <h1 className="text-2xl font-semibold text-white">
+              Bạn không có quyền truy cập
+            </h1>
+            <p className="mt-2 text-slate-300">
+              Vui lòng đăng nhập để xem trang này. Nếu bạn đi lạc, có thể quay
+              về trang chủ.
+            </p>
+
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-600/60 bg-slate-800/60 px-4 py-2 text-slate-200 hover:bg-slate-700/60 transition"
+              >
+                <Home className="w-4 h-4" />
+                Về trang chủ
+              </Link>
+
+              <Link
+                href={`/login`}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-2 text-white hover:from-blue-700 hover:to-cyan-700 transition"
+              >
+                <LogIn className="w-4 h-4" />
+                Đăng nhập
+              </Link>
+            </div>
+          </div>
+        </div>
+      </>
+    );
   }
 
   // Validation functions
@@ -466,7 +505,7 @@ export default function UserProfilePage() {
 
   return (
     <div
-      className="relative overflow-hidden bg-[#0E1B36] pt-32"
+      className="relative overflow-hidden bg-[#0E1B36] pt-32 z-50"
       style={{ minHeight: CONTENT_MIN_HEIGHT }}
     >
       {/* Enhanced Animated Background */}
@@ -551,7 +590,6 @@ export default function UserProfilePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/1 to-transparent animate-pulse"></div>
         </div>
       </div>
-
       {/* Main Split Layout */}
       <div
         className="relative z-10 flex"
@@ -629,7 +667,6 @@ export default function UserProfilePage() {
           </Tabs>
         </div>
       </div>
-
       {/* Bot Settings Dialog */}
       <Dialog
         open={showBotSettingsDialog}
@@ -696,7 +733,6 @@ export default function UserProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Bot Renewal Dialog */}
       <Dialog open={showBotRenewDialog} onOpenChange={setShowBotRenewDialog}>
         <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-lg">
@@ -770,7 +806,6 @@ export default function UserProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Cancel Order Dialog */}
       <AlertDialog
         open={showCancelOrderDialog}
@@ -800,7 +835,6 @@ export default function UserProfilePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       {/* QR Payment Dialog */}
       <Dialog open={showQRPaymentDialog} onOpenChange={setShowQRPaymentDialog}>
         <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">

@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   TrendingUp,
   TrendingDown,
@@ -19,10 +14,15 @@ import {
   ArrowDownRight,
   Minus,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSymbolData } from "@/services/api";
 import { useSymbolStore } from "@/store/symbol.store";
+import { SymbolData } from "../viewdetails/types";
 
-const getTrendIcon = (trend: string) => {
+const getTrendIcon = (trend: string | number) => {
   return trend === "up" ? (
     <TrendingUp className="w-4 h-4" />
   ) : (
@@ -61,41 +61,39 @@ const getRecommendationIcon = (rec: string) => {
 };
 
 export function QuickAnalysis() {
-  const [selectedStock, setSelectedStock] = useState("symbolId");
+  const [selectedStock, setSelectedStock] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
 
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<SymbolByNameData[] | null>(null);
+  const [data, setData] = useState<SymbolData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  type SymbolByNameData = {
-    name: string;
-    id: string;
-    exchange: string;
-    updated_at: string;
-  };
   useEffect(() => {
-    const fetchSymbols = async () => {
+    let alive = true;
+    (async () => {
       try {
-        const data = await getSymbolData();
-        setData(data);
-        useSymbolStore.getState().setSymbolMap(data);
+        setLoading(true);
+        const list = await getSymbolData();
+        if (!alive) return;
+        setData(list);
+        useSymbolStore.getState().setSymbolMap(list);
+        if (!selectedStock && list?.length) {
+          setSelectedStock(list[0].name);
+        }
       } catch (err) {
+        if (!alive) return;
         setError("Không lấy được dữ liệu symbol");
         console.error(err);
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
+    })();
+    return () => {
+      alive = false;
     };
-    setLoading(true);
-    fetchSymbols();
-    // No return value here (void)
-  }, [selectedStock]);
+  }, []);
 
   const selectedData = data?.find((stock) => stock.name === selectedStock);
-
-
-  console.log("Data  fixid:", selectedData);
 
   return (
     <div className="space-y-6">

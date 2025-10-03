@@ -5,6 +5,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layouts/Header";
 import { usePathname } from "next/navigation";
+import Footer from "@/components/layouts/Footer";
+import ScrollToTopButton from "@/components/specific/ScrollToTopButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +37,7 @@ export default function RootLayout({
   const isLoginPage = usePathname().includes("login");
 
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth scroll-pt-[200px]">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -578,6 +580,8 @@ export default function RootLayout({
           {/* Header */}
           {!isLoginPage && <Header />}
           <div className="relative z-10">{children}</div>
+          {!isLoginPage && <Footer />}
+          <ScrollToTopButton />
         </div>
       </body>
     </html>

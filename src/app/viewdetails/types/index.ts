@@ -74,3 +74,10 @@ export interface CompanyDetails {
   readonly exchange?: string;
   readonly [key: string]: unknown;
 }
+
+export interface SymbolData {
+  id: string;
+  name: string;
+  exchange: string;
+  updated_at?: string;
+}
