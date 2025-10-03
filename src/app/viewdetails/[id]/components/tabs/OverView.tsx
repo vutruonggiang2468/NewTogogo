@@ -68,8 +68,6 @@ export default function OverviewTab({
   const newsData = data?.company?.news || [];
   const sortedNews = [...newsData].sort((a, b) => b.public_date - a.public_date);
 
-
-  console.log("sàn:", data?.symbolData?.company);
   return (
 
     <div className="space-y-6 mt-0">

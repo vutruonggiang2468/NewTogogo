@@ -15,7 +15,6 @@ export const useApiData = (symbol: string = "AAPL") => {
     try {
       const response = await apiGetSymbolData(symbol);
       setData(response);
-      console.log("Data fetched:", response);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);

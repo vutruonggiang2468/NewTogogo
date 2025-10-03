@@ -44,7 +44,6 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
 
       try {
         const data = await getNameData(currentSearchQuery.trim().toUpperCase());
-        console.log("Search data received:", data);
 
         // Ensure we have an array of results
         const results = Array.isArray(data) ? data : [data];
@@ -57,7 +56,6 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
               const details = await getCompanyDetails(result.id);
               return { id: result.id, details };
             } catch (err) {
-              console.log(`Failed to fetch details for ${result.id}:`, err);
               return { id: result.id, details: null };
             }
           }
@@ -425,11 +423,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                   key={startIndex + index}
                   className="p-6 bg-slate-800/60 rounded-xl border border-slate-600/40 hover:border-slate-500/60 cursor-pointer transition-all duration-300 hover:shadow-lg hover:bg-slate-800/80 relative overflow-hidden group"
                   onClick={() => {
-                    console.log("Clicked result:", result);
-                    // Use the 'id' field which is the stock ID
-                    const stockId = result.id;
-                    console.log("Using stockId:", stockId);
-                    onDetailedAnalysis(stockId);
+                    onDetailedAnalysis(result.id);
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-400/8 via-transparent to-blue-400/4 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -481,11 +475,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("Button clicked - result:", result);
-                        // Use the 'id' field which is the stock ID
-                        const stockId = result.id;
-                        console.log("Button using stockId:", stockId);
-                        onDetailedAnalysis(stockId);
+                        onDetailedAnalysis(result.id);
                       }}
                     >
                       Xem chi tiết
