@@ -5,13 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { ShareholderStructure } from "../sections/ShareholderStructure";
 import { Subsidiaries } from "../sections/Subsidiaries";
 import { calculateMarketPosition } from "@/components/helpers/detailedAnalysisHelpers";
+import type { StockAnalysis, CompanyDetails, CompanyOfficer } from "@/app/viewdetails/types";
 
 interface GovernanceProps {
-  stock: any;
-  data: any;
+  stock: StockAnalysis;
+  data: CompanyDetails;
 }
 
 export default function GovernanceTab({ stock, data }: GovernanceProps) {
+  // Helper to get company data (handle both single object and array)
+  const companyData = Array.isArray(data?.symbolData?.company)
+    ? data.symbolData.company[0]
+    : data?.symbolData?.company;
+
   return (
     <div className="space-y-6 mt-0">
       {/* Shareholder Structure - Full Width */}
@@ -28,8 +34,8 @@ export default function GovernanceTab({ stock, data }: GovernanceProps) {
             Ban lãnh đạo
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data?.symbolData?.company?.officers?.map(
-              (officer: any, index: number) => (
+            {companyData?.officers?.map(
+              (officer: CompanyOfficer, index: number) => (
                 <div key={index} className="p-4 bg-slate-700/30 rounded-lg">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-white font-bold">
@@ -47,10 +53,12 @@ export default function GovernanceTab({ stock, data }: GovernanceProps) {
                   <div className="text-xs text-slate-400 space-y-1">
                     <div>Chức vụ: {officer.officer_position}</div>
                     <div>Tỷ lệ sở hữu: {officer.officer_owner_percent}%</div>
-                    <div>
-                      Cập nhật:{" "}
-                      {new Date(officer.updated_at).toLocaleDateString("vi-VN")}
-                    </div>
+                    {officer.updated_at && (
+                      <div>
+                        Cập nhật:{" "}
+                        {new Date(officer.updated_at).toLocaleDateString("vi-VN")}
+                      </div>
+                    )}
                   </div>
                 </div>
               )

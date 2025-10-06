@@ -17,11 +17,46 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface FinancialsTabProps {
-  data: any;
+export interface BalanceData {
+  year: number;
+  quarter: number;
+  symbol?: { exchange?: string };
+  total_assets?: number | null;
+  current_assets?: number | null;
+  long_term_assets?: number | null;
+  liabilities?: number | null;
+  owners_equity?: number | null;
+  total_resources?: number | null;
+  cash_and_cash_equivalents?: number | null;
+  short_term_investments?: number | null;
+  accounts_receivable?: number | null;
+  net_inventories?: number | null;
+  prepayments_to_suppliers?: number | null;
+  fixed_assets?: number | null;
+  long_term_investments?: number | null;
+  long_term_prepayments?: number | null;
+  other_long_term_receivables?: number | null;
+  long_term_trade_receivables?: number | null;
+  current_liabilities?: number | null;
+  short_term_borrowings?: number | null;
+  advances_from_customers?: number | null;
+  long_term_liabilities?: number | null;
+  long_term_borrowings?: number | null;
+  paid_in_capital?: number | null;
+  undistributed_earnings?: number | null;
+  investment_and_development_funds?: number | null;
+  common_shares?: number | null;
 }
 
-interface QuarterData {
+interface FinancialsTabProps {
+  data: {
+    stock?: { code?: string };
+    balanceData?: BalanceData[];
+    incomeData?: QuarterData[];
+  };
+}
+
+export interface QuarterData {
   year: number;
   quarter: number;
   revenue: number;
@@ -33,6 +68,8 @@ interface QuarterData {
   business_income_tax_current: number;
   business_income_tax_deferred: number;
   minority_interest: number;
+  net_other_income_expenses?: number;
+  general_admin_expenses?: number;
 }
 
 export default function FinancialsTab({ data }: FinancialsTabProps) {
@@ -47,7 +84,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
   const stock = data?.stock || { code: "N/A" };
 
   const balanceEntries = useMemo(() => {
-    if (!Array.isArray(data?.balanceData)) return [] as Array<Record<string, unknown>>;
+    if (!Array.isArray(data?.balanceData)) return [] as BalanceData[];
 
     return [...data.balanceData].sort((a, b) => {
       if (a.year !== b.year) return b.year - a.year;
@@ -101,7 +138,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
   const availableYears = useMemo(
     () =>
       Array.from(new Set(balanceEntries.map((entry) => entry.year))).sort(
-        (a, b) => b - a
+        (a: number, b: number) => b - a
       ),
     [balanceEntries]
   );
@@ -111,7 +148,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
     return balanceEntries
       .filter((entry) => entry.year === selectedYear)
       .map((entry) => entry.quarter)
-      .sort((a, b) => b - a);
+      .sort((a: number, b: number) => b - a);
   }, [balanceEntries, selectedYear]);
 
   const currentBalance = useMemo(() => {
@@ -308,7 +345,7 @@ export default function FinancialsTab({ data }: FinancialsTabProps) {
             const totalResources =
               safeNumber(balance.total_resources) || totals.totalAssets;
 
-            const data = {
+            const data: BalanceData = {
               ...balance,
               total_assets: totals.totalAssets,
               current_assets: totals.currentAssets,
@@ -530,7 +567,7 @@ return (
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-slate-300">Lợi nhuận sau thuế chưa phân phối</span>
-                          <span className={`text-sm font-medium ${data.undistributed_earnings < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                          <span className={`text-sm font-medium ${(data.undistributed_earnings ?? 0) < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                             {formatVND(data.undistributed_earnings)}
                           </span>
                         </div>
@@ -556,7 +593,7 @@ return (
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-emerald-400">
-                        {formatVND(data.total_assets)} = {formatVND(data.liabilities + data.owners_equity)}
+                        {formatVND(data.total_assets)} = {formatVND((data.liabilities ?? 0) + (data.owners_equity ?? 0))}
                       </div>
                       <Badge className="bg-emerald-500/20 text-emerald-400 text-xs mt-2">
                         <CheckCircle className="w-3 h-3 mr-1" />
@@ -766,15 +803,13 @@ return (
                                         Thu nhập khác (ròng):
                                       </span>
                                       <span
-                                        className={`font-semibold ${(quarter as any)
-                                          .net_other_income_expenses >= 0
+                                        className={`font-semibold ${(quarter.net_other_income_expenses ?? 0) >= 0
                                           ? "text-emerald-400"
                                           : "text-red-400"
                                           }`}
                                       >
                                         {formatCurrency(
-                                          (quarter as any)
-                                            .net_other_income_expenses
+                                          quarter.net_other_income_expenses
                                         )}
                                       </span>
                                     </div>
@@ -905,8 +940,7 @@ return (
                                       </span>
                                       <span className="text-red-400 font-semibold">
                                         {formatCurrency(
-                                          (quarter as any)
-                                            .general_admin_expenses
+                                          quarter.general_admin_expenses
                                         )}
                                       </span>
                                     </div>

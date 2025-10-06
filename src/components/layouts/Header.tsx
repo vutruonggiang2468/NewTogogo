@@ -34,9 +34,6 @@ type UserProfile = {
   displayName?: string;
   [key: string]: unknown;
 };
-interface HeaderProps {
-  data: any;
-}
 
 const PROFILE_ENDPOINT = "http://192.168.31.248:8000/api/auth/profile";
 
@@ -133,7 +130,7 @@ export function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   // const [user, setUser] = useState<UserProfile | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);

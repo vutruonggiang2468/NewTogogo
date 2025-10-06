@@ -10,16 +10,8 @@ import { getStockAnalysis } from "@/components/helpers/detailedAnalysisHelpers";
 import TabsDetail from "./components/Tabs";
 import Breadcrumb from "@/components/layouts/Breadcrumb";
 import { getCompanyDetails, getSymbolData } from "@/services/api";
-import { CompanyDetails } from "../types";
+import type { CompanyDetails, RatioData, SymbolItem, StockAnalysis } from "../types";
 import { useSymbolStore } from "@/store/symbol.store";
-
-interface Stock {
-  name: string;
-  currentPrice: string;
-  change: string;
-  changePercent: string;
-  data: any;
-}
 
 export default function DetailedAnalysisPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,11 +21,11 @@ export default function DetailedAnalysisPage() {
 
   const { symbolMap, setSymbolMap } = useSymbolStore();
   const [data, setData] = useState<CompanyDetails | null>(null);
-  const [stock, setStock] = useState<any>(null);
+  const [stock, setStock] = useState<StockAnalysis | null>(null);
   const isPositive = stock?.change?.trim().startsWith("+") ?? false;
-  const [latestRatios, setLatestRatios] = useState<any>(null);
+  const [latestRatios, setLatestRatios] = useState<RatioData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [symbolList, setSymbolList] = useState<any[]>([]);
+  const [symbolList, setSymbolList] = useState<SymbolItem[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -44,9 +36,9 @@ export default function DetailedAnalysisPage() {
         const list = await getSymbolData("");
         console.log("📋 Symbol list received:", list);
         setSymbolMap(list);
-        setSymbolList(list);
+        setSymbolList(list as unknown as SymbolItem[]);
       } else {
-        setSymbolList(Object.values(symbolMap));
+        setSymbolList(Object.values(symbolMap) as unknown as SymbolItem[]);
       }
     };
     load();
@@ -80,9 +72,9 @@ export default function DetailedAnalysisPage() {
           console.log("⚠️ No symbol name found in details.symbolData");
         }
 
-        if (details?.ratiosData) {
+        if (details?.ratiosData && Array.isArray(details.ratiosData)) {
           console.log("Raw ratiosData:", details.ratiosData);
-          const latest = getLatestQuarter(details.ratiosData);
+          const latest = getLatestQuarter(details.ratiosData as RatioData[]);
           console.log("Latest quarter:", latest);
           setLatestRatios(latest);
         }
@@ -98,7 +90,7 @@ export default function DetailedAnalysisPage() {
   }, [id]);
 
   const filteredSuggestions = symbolList
-    .filter((symbol: any) =>
+    .filter((symbol) =>
       symbol.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       symbol.company?.company_name?.toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -110,7 +102,7 @@ export default function DetailedAnalysisPage() {
     window.location.href = `/viewdetails/${stockId}`;
   };
 
-  function getLatestQuarter(data: any) {
+  function getLatestQuarter(data: RatioData[]): RatioData | null {
     if (!data || !Array.isArray(data) || data.length === 0) {
       console.log("⚠️ getLatestQuarter: data không hợp lệ", data);
       return null;
@@ -151,11 +143,15 @@ export default function DetailedAnalysisPage() {
                     </div>
                     <div>
                       <h1 className="text-xl font-bold text-white">
-                        {data?.symbolData?.company?.company_name}
+                        {Array.isArray(data?.symbolData?.company)
+                          ? data?.symbolData?.company[0]?.company_name
+                          : data?.symbolData?.company?.company_name || 'N/A'}
                       </h1>
                       <p className="text-slate-400 text-base">
-                        {data?.symbolData?.company?.sector}
-                        {data?.symbolData?.company?.exchange}
+                        {Array.isArray(data?.symbolData?.company)
+                          ? data?.symbolData?.company[0]?.industry
+                          : data?.symbolData?.company?.industry}
+                        {data?.exchange}
                       </p>
                     </div>
                   </div>
@@ -204,7 +200,7 @@ export default function DetailedAnalysisPage() {
                 searchQuery &&
                 filteredSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 bg-slate-800/95 border border-blue-400/30 rounded-lg shadow-xl z-10 mt-1 overflow-hidden">
-                    {filteredSuggestions.map((stockItem: any) => {
+                    {filteredSuggestions.map((stockItem) => {
                       return (
                         <button
                           key={stockItem.id}
@@ -229,11 +225,13 @@ export default function DetailedAnalysisPage() {
                   </div>
                 )}
             </div>
-            <TabsDetail
-              stock={stock}
-              data={detailedInfo}
-              isPositive={isPositive}
-            />
+            {stock && detailedInfo && (
+              <TabsDetail
+                stock={stock}
+                data={detailedInfo}
+                isPositive={isPositive}
+              />
+            )}
           </div>
         </div>
       </div>

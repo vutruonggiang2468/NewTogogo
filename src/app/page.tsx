@@ -1,8 +1,7 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
-import { useEffect } from "react";
-import { ChartColumnBig, Clock, Database, Eye, Link, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChartColumnBig, Clock, Database, Eye, Link as LinkIcon, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeepAnalysisPage } from "./components/DeepAnalysisPage";
@@ -14,6 +13,7 @@ import { EconomicCalendar } from "./components/EconomicCalendar";
 import { NewsSidebar } from "./components/NewsSidebar";
 import { FacebookIcon, TwitterIcon, LinkedinIcon } from "lucide-react";
 import { getCompanyDetails } from "@/services/api";
+import Link from "next/link";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<
@@ -44,17 +44,6 @@ export default function Home() {
     setSelectedArticle(1);
   };
 
-  if (currentView === "news-detail") {
-    return (
-      <NewsDetailPage
-        articleId={selectedArticle}
-        onBack={handleBackToHome}
-        onViewDetails={handleViewDetails}
-      />
-    );
-  }
-
-
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
@@ -69,6 +58,16 @@ export default function Home() {
     const interval = setInterval(updateClock, 1000); // update mỗi giây
     return () => clearInterval(interval);
   }, []);
+
+  if (currentView === "news-detail") {
+    return (
+      <NewsDetailPage
+        articleId={selectedArticle}
+        onBack={handleBackToHome}
+        onViewDetails={handleViewDetails}
+      />
+    );
+  }
 
   if (currentView === "deep-analysis") {
     return <DeepAnalysisPage onBack={handleBackToHome} />;
@@ -371,13 +370,13 @@ export default function Home() {
             </div>
             <div>
               <h3 className="flex items-center gap-2 mb-4 text-white">
-                <Link className="w-5 h-5 text-cyan-400" />
+                <LinkIcon className="w-5 h-5 text-cyan-400" />
                 <span>Liên kết nhanh</span>
               </h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="/" className="hover:text-cyan-400">Trang chủ</a></li>
-                <li><a href="/" className="hover:text-cyan-400">Tin tức</a></li>
-                <li><a href="/" className="hover:text-cyan-400">Tìm kiếm mã</a></li>
+                <li><Link href="/" className="hover:text-cyan-400">Trang chủ</Link></li>
+                <li><Link href="/" className="hover:text-cyan-400">Tin tức</Link></li>
+                <li><Link href="/" className="hover:text-cyan-400">Tìm kiếm mã</Link></li>
 
               </ul>
             </div>

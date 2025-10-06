@@ -23,6 +23,7 @@ import { getSymbolData, getCompanyDetails } from "@/services/api";
 import { useSymbolStore } from "@/store/symbol.store";
 import { getStockAnalysis } from "@/components/helpers/detailedAnalysisHelpers";
 import dayjs from "dayjs";
+import type { CompanyDetails } from "@/app/viewdetails/types";
 
 const getTrendIcon = (trend: string) => {
   return trend === "up" ? (
@@ -69,7 +70,7 @@ export function QuickAnalysis() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<SymbolByNameData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [detailedInfo, setDetailedInfo] = useState<any>(null);
+  const [detailedInfo, setDetailedInfo] = useState<CompanyDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
 
   type SymbolByNameData = {

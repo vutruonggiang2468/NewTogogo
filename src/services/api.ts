@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { CompanyDetails } from "@/app/viewdetails/types";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_ORIGIN}/api`;
 // const API_URL = "https://payment.operis.vn/api";
@@ -19,7 +20,6 @@ export const getSymbolData = async (symbol: string) => {
     if (!response?.data || response.data.length === 0) {
       return { message: "Đang cập nhật dữ liệu…" };
     }
-
     return response.data;
   } catch (error) {
     console.error("getSymbolData error:", error);
@@ -64,8 +64,7 @@ export const getNameData = async (code: string) => {
 //     return { message: "Đang cập nhật dữ liệu…" };
 //   }
 // Lấy chi tiết công ty
-export const getCompanyDetails = async (symbolId: number) => {
-  console.log("📞 getCompanyDetails called with symbolId:", symbolId);
+export const getCompanyDetails = async (symbolId: number): Promise<CompanyDetails> => {
   const endpoints = [
     { key: "symbolData", url: `/stocks/symbols/${symbolId}` },
     { key: "balanceData", url: `/calculate/balances/${symbolId}` },
@@ -73,21 +72,18 @@ export const getCompanyDetails = async (symbolId: number) => {
     { key: "cashflowData", url: `/calculate/cashflows/${symbolId}` },
     { key: "ratiosData", url: `/calculate/ratios/${symbolId}` },
   ];
-
-  console.log("🌐 API endpoints:", endpoints.map(e => e.url));
-
   const results = await Promise.allSettled(
     endpoints.map((ep) => api.get(ep.url))
   );
 
-  const data: Record<string, any> = {};
+  const data: CompanyDetails = {};
 
   results.forEach((res, i) => {
     if (res.status === "fulfilled" && res.value?.data) {
       data[endpoints[i].key] = res.value.data;
       console.log(`✅ ${endpoints[i].key}:`, Array.isArray(res.value.data) ? `${res.value.data.length} items` : 'object');
     } else {
-      const error = res.status === "rejected" ? res.reason : "Unknown error";
+      const error = res.status === "rejected" ? (res.reason as { response?: { status?: number; data?: unknown }; message?: string }) : null;
       console.error(`❌ Failed to fetch ${endpoints[i].key}:`, {
         url: endpoints[i].url,
         error: error?.response?.status,

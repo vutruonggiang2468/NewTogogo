@@ -28,7 +28,6 @@ import type { CompanyDetails } from "../../../types";
 type Quarter = 1 | 2 | 3 | 4;
 interface CashFlowData {
   rows: CashFlowRow[];
-  data: any;
 }
 export type CashFlowRow = {
   year: number;
