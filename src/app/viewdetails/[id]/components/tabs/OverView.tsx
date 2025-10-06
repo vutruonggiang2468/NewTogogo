@@ -1,4 +1,5 @@
 import React from "react";
+import type { StockAnalysis, CompanyDetails, IndustryInfo, CompanyEvent, NewsItem } from "@/app/viewdetails/types";
 import { Building2, PieChart, Globe, FileBarChart, ChevronRight, Clock, TrendingUp, Users, DollarSign, Briefcase, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +10,8 @@ import style from "styled-jsx/style";
 
 
 interface OverviewTabProps {
-  stock: any;
-  data: any;
+  stock: StockAnalysis;
+  data: CompanyDetails;
   isPositive: boolean;
 }
 
@@ -19,6 +20,11 @@ export default function OverviewTab({
   data,
   isPositive,
 }: OverviewTabProps) {
+  // Helper to get company data (handle both single object and array)
+  const companyData = Array.isArray(data?.symbolData?.company)
+    ? data.symbolData.company[0]
+    : data?.symbolData?.company;
+
   function formatDate(timestamp: number) {
     // timestamp từ JSON thường tính bằng giây → nhân 1000
     const date = new Date(timestamp * 1000);
@@ -31,7 +37,7 @@ export default function OverviewTab({
     const pct = (value * 100).toFixed(2); // giữ 2 chữ số thập phân
     return `${value > 0 ? "+" : ""}${pct}%`;
   }
-  function formatDatee(dateStr?: string) {
+  function formatDatee(dateStr?: string | null) {
     if (!dateStr) return "Chưa có";
 
     const date = new Date(dateStr);
@@ -49,7 +55,7 @@ export default function OverviewTab({
     });
   }
 
-  function formatDateTimee(dateStr?: string): string {
+  function formatDateTimee(dateStr?: string | null): string {
     if (!dateStr) return "Chưa có";
 
     const date = new Date(dateStr);
@@ -65,7 +71,7 @@ export default function OverviewTab({
       timeZone: "Asia/Ho_Chi_Minh",
     });
   }
-  const newsData = data?.company?.news || [];
+  const newsData = companyData?.news || [];
   const sortedNews = [...newsData].sort((a, b) => b.public_date - a.public_date);
 
   return (
@@ -74,7 +80,7 @@ export default function OverviewTab({
       {/* Stock Chart - Full Width */}
       {stock && (
         <StockChart
-          stockCode={stock.symbol}
+          stockCode={stock.code}
           currentPrice={stock.currentPrice}
           change={stock.change}
           changePercent={stock.changePercent}
@@ -94,14 +100,14 @@ export default function OverviewTab({
               <div className="p-3 bg-slate-700/30 rounded-lg">
                 <div className="text-xs text-slate-400">Tên đầy đủ</div>
                 <div className="text-white">
-                  {data?.symbolData?.company?.company_name ?? "Undefined"}
+                  {companyData?.company_name ?? "Undefined"}
                 </div>
               </div>
 
               <div className="p-3 bg-slate-700/30 rounded-lg">
                 <div className="text-xs text-slate-400">Hồ sơ doanh nghiệp</div>
                 <div className="text-white text-sm leading-relaxed">
-                  {data?.symbolData?.company?.company_profile ?? "Undefined"}
+                  {companyData?.company_profile ?? "Undefined"}
                 </div>
               </div>
             </div>
@@ -116,21 +122,21 @@ export default function OverviewTab({
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Thành lập</div>
                   <div className="text-white">
-                    {data?.symbolData?.company?.history
-                      ? data.symbolData?.company.history.match(/\d{4}/)?.[0] // lấy năm đầu tiên trong chuỗi
+                    {companyData?.history
+                      ? companyData?.history.match(/\d{4}/)?.[0] // lấy năm đầu tiên trong chuỗi
                       : "Undifined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Website</div>
                   <div className="text-cyan-400 text-xs">
-                    {data?.symbolData?.company?.website ?? "Undefined"}
+                    {companyData?.website ?? "Undefined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Nhân viên</div>
                   <div className="text-white">
-                    {data?.symbolData?.company?.no_employees ?? "Undefined"}
+                    {companyData?.no_employees ?? "Undefined"}
                   </div>
                 </div>
                 <div className="p-3 bg-slate-700/30 rounded-lg">
@@ -144,9 +150,9 @@ export default function OverviewTab({
                     Tổng số cổ phần phát hành
                   </div>
                   <div className="text-white">
-                    {data?.symbolData?.company?.financial_ratio_issue_share
+                    {companyData?.financial_ratio_issue_share
                       ? `${Number(
-                        data?.symbolData?.company?.financial_ratio_issue_share
+                        companyData?.financial_ratio_issue_share
                       ).toLocaleString("vi-VN")} cổ phiếu`
                       : "Undefined"}
                   </div>
@@ -154,9 +160,9 @@ export default function OverviewTab({
                 <div className="p-3 bg-slate-700/30 rounded-lg">
                   <div className="text-xs text-slate-400">Vốn điều lệ</div>
                   <div className="text-white">
-                    {data?.symbolData?.company?.charter_capital
+                    {companyData?.charter_capital
                       ? Number(
-                        data?.symbolData?.company?.charter_capital
+                        companyData?.charter_capital
                       ).toLocaleString("vi-VN", {
                         style: "currency",
                         currency: "VND",
@@ -180,7 +186,7 @@ export default function OverviewTab({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             {Array.isArray(data?.symbolData?.industries) &&
               data.symbolData.industries.map(
-                (industries: any, index: number) => (
+                (industries: IndustryInfo, index: number) => (
                   <div key={index} className="p-4 bg-slate-700/30 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-white">
@@ -205,9 +211,9 @@ export default function OverviewTab({
             Sự kiện doanh nghiệp
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            {data?.symbolData?.company?.events?.length ? (
-              data.symbolData?.company.events.map(
-                (events: any, index: number) => (
+            {companyData?.events?.length ? (
+              companyData?.events.map(
+                (events: CompanyEvent, index: number) => (
                   <div
                     key={index}
                     className="p-5 bg-slate-700/30 backdrop-blur-sm rounded-xl border border-indigo-400/20"
@@ -244,7 +250,7 @@ export default function OverviewTab({
                         size="sm"
                         className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-400/30 text-xs"
                         onClick={() =>
-                          window.open(events?.source_url, "_blank")
+                          events?.source_url && window.open(events.source_url, "_blank")
                         }
                       >
                         <Globe className="w-3 h-3 mr-1" />
@@ -342,8 +348,8 @@ export default function OverviewTab({
 
               return (
                 <div className="grid grid-cols-2 gap-5">
-                  {data?.symbolData?.company?.news?.length ? (
-                    data.symbolData?.company.news.map((news: any, index: number) => {
+                  {companyData?.news?.length ? (
+                    companyData?.news.map((news: NewsItem, index: number) => {
                       const style = newsTypeStyles[news.type as keyof typeof newsTypeStyles];
                       const priority = priorityIndicators[news.priority as keyof typeof priorityIndicators];
                       const IconComponent = style?.icon;
@@ -352,7 +358,7 @@ export default function OverviewTab({
                         <div
                           key={index}
                           className={`relative p-6 bg-gradient-to-br ${style?.gradient} backdrop-blur-sm rounded-2xl border ${style?.border} transition-all duration-500 group cursor-pointer overflow-hidden hover:scale-[1.02] hover:shadow-2xl ${style?.glow}`}
-                          onClick={() => window.open(news.news_source_link, "_blank")}
+                          onClick={() => news.news_source_link && window.open(news.news_source_link, "_blank")}
                         >
                           {/* Priority indicator */}
                           <div className={`absolute top-3 right-3 w-2 h-2 ${priority?.color} rounded-full ${priority?.pulse}`}></div>
@@ -389,9 +395,9 @@ export default function OverviewTab({
                                 <div className="flex items-center gap-2 text-slate-300">
                                   {/* Chấm màu trạng thái */}
                                   <div
-                                    className={`w-1 h-1 rounded-full ${news.price_change_pct > 0
+                                    className={`w-1 h-1 rounded-full ${(news.price_change_pct ?? 0) > 0
                                       ? "bg-green-400"
-                                      : news.price_change_pct < 0
+                                      : (news.price_change_pct ?? 0) < 0
                                         ? "bg-red-400"
                                         : "bg-gray-400"
                                       }`}
@@ -401,17 +407,17 @@ export default function OverviewTab({
 
                                   {/* Giá trị phần trăm */}
                                   <span
-                                    className={`flex items-center gap-1 ${news.price_change_pct > 0
+                                    className={`flex items-center gap-1 ${(news.price_change_pct ?? 0) > 0
                                       ? "text-green-400"
-                                      : news.price_change_pct < 0
+                                      : (news.price_change_pct ?? 0) < 0
                                         ? "text-red-400"
                                         : "text-gray-400"
                                       } font-medium`}
                                   >
-                                    {news.price_change_pct > 0 && <ArrowUpRight className="w-3 h-3" />}
-                                    {news.price_change_pct < 0 && <ArrowDownRight className="w-3 h-3" />}
-                                    {news.price_change_pct === 0 && <Minus className="w-3 h-3" />}
-                                    {formatPct(news.price_change_pct)}
+                                    {(news.price_change_pct ?? 0) > 0 && <ArrowUpRight className="w-3 h-3" />}
+                                    {(news.price_change_pct ?? 0) < 0 && <ArrowDownRight className="w-3 h-3" />}
+                                    {(news.price_change_pct ?? 0) === 0 && <Minus className="w-3 h-3" />}
+                                    {formatPct(news.price_change_pct ?? 0)}
                                   </span>
                                 </div>
                               </div>

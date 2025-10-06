@@ -2,22 +2,55 @@ import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/bagde";
 import { Progress } from "@/components/ui/progress";
 
+interface Shareholder {
+  share_holder: string;
+  share_own_percent: number;
+}
+
+interface MajorShareholder {
+  name: string;
+  ownership: string;
+  shares: string;
+  type: string;
+}
+
+interface ShareholderStructureData {
+  governmentOwnership: string;
+  publicOwnership: string;
+  foreignOwnership: string;
+  majorShareholders: MajorShareholder[];
+}
+
 interface ShareholderStructureProps {
-  shareholderData: any;
-  data?: any;
+  shareholderData: ShareholderStructureData;
+  data?: {
+    symbolData?: {
+      company?: {
+        shareholders?: Shareholder[];
+      } | Array<{
+        shareholders?: Shareholder[];
+      }>;
+    };
+    [key: string]: unknown;
+  };
 }
 
 export function ShareholderStructure({
   shareholderData,
   data,
 }: ShareholderStructureProps) {
-  const largest = data?.symbolData?.company?.shareholders?.[0];
-  const largest1 = data?.symbolData?.company?.shareholders?.[1];
-  const largest2 = data?.symbolData?.company?.shareholders?.[2];
-  const largest3 = data?.symbolData?.company?.shareholders?.[3];
-  const largest4 = data?.symbolData?.company?.shareholders?.[4];
-  const largest5 = data?.symbolData?.company?.shareholders?.[5];
-  const largest6 = data?.symbolData?.company?.shareholders?.[6];
+  // Get company data (handle both single object and array)
+  const companyData = Array.isArray(data?.symbolData?.company)
+    ? data.symbolData.company[0]
+    : data?.symbolData?.company;
+
+  const largest = companyData?.shareholders?.[0];
+  const largest1 = companyData?.shareholders?.[1];
+  const largest2 = companyData?.shareholders?.[2];
+  const largest3 = companyData?.shareholders?.[3];
+  const largest4 = companyData?.shareholders?.[4];
+  const largest5 = companyData?.shareholders?.[5];
+  const largest6 = companyData?.shareholders?.[6];
   //const pct = largest ? (largest.share_own_percent * 100).toFixed(2) : null;
   const pct = largest ? (largest.share_own_percent * 100).toFixed(2) : "0.00";
   const pct1 = largest1
@@ -69,7 +102,7 @@ export function ShareholderStructure({
                     {pct}%
                   </div>
                   <Progress
-                    value={parseFloat(largest?.share_own_percent)}
+                    value={parseFloat(String(largest?.share_own_percent ?? 0))}
                     className="h-1.5"
                   />
                 </div>
@@ -81,7 +114,7 @@ export function ShareholderStructure({
                     {pct1}%
                   </div>
                   <Progress
-                    value={parseFloat(largest1?.share_own_percent)}
+                    value={parseFloat(String(largest1?.share_own_percent ?? 0))}
                     className="h-1.5"
                   />
                 </div>
@@ -93,7 +126,7 @@ export function ShareholderStructure({
                     {pct2}%
                   </div>
                   <Progress
-                    value={parseFloat(largest2?.share_own_percent)}
+                    value={parseFloat(String(largest2?.share_own_percent ?? 0))}
                     className="h-1.5"
                   />
                 </div>
@@ -120,7 +153,7 @@ export function ShareholderStructure({
                       </div>
                     </div>
                     <Progress
-                      value={parseFloat(largest3?.share_own_percent)}
+                      value={parseFloat(String(largest3?.share_own_percent ?? 0))}
                       className="h-1.5"
                     />
                   </div>
@@ -142,7 +175,7 @@ export function ShareholderStructure({
                       </div>
                     </div>
                     <Progress
-                      value={parseFloat(largest4?.share_own_percent)}
+                      value={parseFloat(String(largest4?.share_own_percent ?? 0))}
                       className="h-1.5"
                     />
                   </div>
@@ -164,7 +197,7 @@ export function ShareholderStructure({
                       </div>
                     </div>
                     <Progress
-                      value={parseFloat(largest5?.share_own_percent)}
+                      value={parseFloat(String(largest5?.share_own_percent ?? 0))}
                       className="h-1.5"
                     />
                   </div>

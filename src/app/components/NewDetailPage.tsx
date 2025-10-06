@@ -33,15 +33,8 @@ import {
   getTimeAgo,
 } from "@/constants/newsData";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
-
-// Define SymbolByNameData type (replace fields with actual structure if known)
-type SymbolByNameData = {
-  // Example fields, update as needed
-  symbol: string;
-  name: string;
-  price: number;
-  // Add other fields as required
-};
+import { getSymbolData as apiGetSymbolByNameData } from "@/services/api";
+import type { SymbolItem } from "@/app/viewdetails/types";
 
 interface NewsDetailPageProps {
   articleId: number;
@@ -60,7 +53,7 @@ export function NewsDetailPage({
 
   const { slug } = useParams<{ slug: string }>();
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<SymbolByNameData[] | null>(null);
+  const [data, setData] = useState<SymbolItem[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const article = articleData[articleId as keyof typeof articleData];
@@ -509,11 +502,11 @@ export function NewsDetailPage({
                   <CardTitle className="text-base">Phân tích nhanh</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {data?.map((item: any) => (
+                  {data?.map((item: SymbolItem) => (
                     <div
                       key={item.id}
                       className="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-                      onClick={() => onViewDetails(item)}
+                      onClick={() => onViewDetails(item.name)}
                     >
                       <span className="text-sm font-medium">{item.name}</span>
                       <div className="flex items-center gap-1">
@@ -616,20 +609,4 @@ export function NewsDetailPage({
   );
 }
 
-async function apiGetSymbolByNameData(slug: any): Promise<SymbolByNameData[]> {
-  // Replace this mock with your actual API call logic
-  return [
-    {
-      symbol: "YTC",
-      name: "YTC Corp",
-      price: 100.5,
-      // Add other fields as required
-    },
-    {
-      symbol: "TCB",
-      name: "Techcombank",
-      price: 45.2,
-      // Add other fields as required
-    },
-  ];
-}
+

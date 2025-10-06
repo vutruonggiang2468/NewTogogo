@@ -5,11 +5,12 @@ import OverviewTab from "./tabs/OverView";
 import FinancialsTab from "./tabs/Financials";
 import GovernanceTab from "./tabs/Governace";
 import AnalysisTab from "./tabs/AnalysisTab";
+import type { StockAnalysis, CompanyDetails } from "@/app/viewdetails/types";
 
 // Import the separated tab components
 interface TabsDetailProps {
-  stock: any; // Replace with proper type based on getStockAnalysis return type
-  data: any;
+  stock: StockAnalysis;
+  data: CompanyDetails;
   isPositive: boolean;
 }
 

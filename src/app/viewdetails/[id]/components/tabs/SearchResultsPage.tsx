@@ -14,6 +14,27 @@ interface SearchResultsPageProps {
   onDetailedAnalysis: (stockId: string) => void;
 }
 
+interface SearchResult {
+  id: string;
+  name?: string;
+  code?: string;
+  symbol?: string;
+  ticker?: string;
+  company_name?: string;
+  companyName?: string;
+  fullName?: string;
+  description?: string;
+  exchange?: string;
+  updated_at?: string;
+}
+
+interface CompanyDetailsCache {
+  company?: {
+    company_name?: string;
+    industry?: string;
+  };
+}
+
 type SortOption = "name" | "code" | "price" | "change";
 type SortDirection = "asc" | "desc";
 
@@ -22,13 +43,13 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [animatedCards, setAnimatedCards] = useState<Set<string>>(new Set());
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentSearchQuery, setCurrentSearchQuery] = useState(searchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<StockSuggestion[]>([]);
-  const [companyDetailsCache, setCompanyDetailsCache] = useState<Record<string, any>>({});
+  const [companyDetailsCache, setCompanyDetailsCache] = useState<Record<string, CompanyDetailsCache>>({});
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,10 +71,10 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
         setSearchResults(results);
 
         // Fetch additional company details for each result
-        const detailsPromises = results.map(async (result: any) => {
+        const detailsPromises = results.map(async (result: SearchResult) => {
           if (result.id && !companyDetailsCache[result.id]) {
             try {
-              const details = await getCompanyDetails(result.id);
+              const details = await getCompanyDetails(Number(result.id));
               return { id: result.id, details };
             } catch (err) {
               return { id: result.id, details: null };
@@ -63,8 +84,8 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
         });
 
         const detailsResults = await Promise.all(detailsPromises);
-        const newCache = { ...companyDetailsCache };
-        detailsResults.forEach(item => {
+        const newCache: Record<string, CompanyDetailsCache> = { ...companyDetailsCache };
+        detailsResults.forEach((item) => {
           if (item && item.details) {
             newCache[item.id] = item.details;
           }
@@ -261,7 +282,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
             <div className="flex items-center gap-2 text-sm text-slate-400">
               <div className="flex items-center gap-1">
                 <Search className="w-4 h-4" />
-                <span>Từ khóa: <span className="text-blue-300 font-medium">"{searchQuery}"</span></span>
+                <span>Từ khóa: <span className="text-blue-300 font-medium">&ldquo;{searchQuery}&rdquo;</span></span>
               </div>
             </div>
           </div>
@@ -346,7 +367,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
               )}
               {currentSearchQuery && (
                 <div className="text-slate-400">
-                  Tìm kiếm cho: <span className="text-white font-medium">"{currentSearchQuery}"</span>
+                  Tìm kiếm cho: <span className="text-white font-medium">&ldquo;{currentSearchQuery}&rdquo;</span>
                 </div>
               )}
             </div>
@@ -396,7 +417,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                 <div className="animate-spin w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full mx-auto mb-4"></div>
                 <h3 className="text-xl font-medium text-white mb-2">Đang tìm kiếm...</h3>
                 <p className="text-slate-400">
-                  Đang tìm kiếm thông tin cho "{searchQuery}"
+                  Đang tìm kiếm thông tin cho &ldquo;{searchQuery}&rdquo;
                 </p>
               </div>
             </div>
@@ -464,7 +485,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                         <div className="flex justify-between text-sm">
                           <span className="text-slate-400">Ngành:</span>
                           <span className="text-cyan-400 text-xs">
-                            {companyDetailsCache[result.id].company.industry}
+                            {companyDetailsCache[result.id]?.company?.industry}
                           </span>
                         </div>
                       )}
@@ -566,7 +587,7 @@ export function SearchResultsPage({ searchQuery, onBack, onDetailedAnalysis }: S
                 <Search className="w-16 h-16 text-slate-500 mx-auto mb-4" />
                 <h3 className="text-xl font-medium text-white mb-2">Không tìm thấy kết quả</h3>
                 <p className="text-slate-400 mb-4">
-                  Không có công ty nào phù hợp với từ khóa "{currentSearchQuery}"
+                  Không có công ty nào phù hợp với từ khóa &ldquo;{currentSearchQuery}&rdquo;
                 </p>
                 <div className="flex gap-2 justify-center">
                   <Button

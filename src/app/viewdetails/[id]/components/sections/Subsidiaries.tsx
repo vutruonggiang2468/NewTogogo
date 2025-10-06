@@ -1,12 +1,41 @@
 import { Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+interface Subsidiary {
+  company_name: string;
+  sub_own_percent: number;
+}
+
+interface StockSubsidiary {
+  name: string;
+  code: string;
+  ownership: string;
+  establishedYear: string;
+  business: string;
+  revenue: string;
+  status: string;
+}
+
 interface SubsidiariesProps {
-  subsidiaries: any[];
-  data?: any;
+  subsidiaries: StockSubsidiary[];
+  data?: {
+    symbolData?: {
+      company?: {
+        subsidiaries?: Subsidiary[];
+      } | Array<{
+        subsidiaries?: Subsidiary[];
+      }>;
+    };
+    [key: string]: unknown;
+  };
 }
 
 export function Subsidiaries({ subsidiaries, data }: SubsidiariesProps) {
+  // Get company data (handle both single object and array)
+  const companyData = Array.isArray(data?.symbolData?.company)
+    ? data.symbolData.company[0]
+    : data?.symbolData?.company;
+
   return (
     <div className="p-6 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl border-2 border-indigo-400/30 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-600/10 to-purple-600/10 rounded-full blur-2xl"></div>
@@ -21,13 +50,13 @@ export function Subsidiaries({ subsidiaries, data }: SubsidiariesProps) {
                 variant="outline"
                 className="text-indigo-400 border-indigo-400/50 bg-indigo-400/10"
               >
-                {data?.symbolData?.company?.subsidiaries?.length || 0} công ty
+                {companyData?.subsidiaries?.length || 0} công ty
               </Badge>
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data?.symbolData?.company?.subsidiaries?.map(
-                (subsidiaries: any, index: number) => (
+              {companyData?.subsidiaries?.map(
+                (subsidiaries, index) => (
                   <div
                     key={index}
                     className="p-5 bg-slate-700/30 backdrop-blur-sm rounded-xl border border-indigo-400/20"
